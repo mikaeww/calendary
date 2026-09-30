@@ -2,9 +2,10 @@
 
 # Calendary
 
-A calendar for Google accounts on Linux, made for Hyprland. Python with Qt Quick (PySide6).
+A calendar for Google accounts and iCloud calendars on Linux, made for Hyprland. Python with Qt Quick (PySide6).
 
-- Sign in with Google in the browser, one button; several accounts, every calendar can be hidden
+- Sign in with Google in the browser, one button; iCloud with the Apple ID and an app-specific password
+  (account.apple.com → Sign-In and Security); several accounts, every calendar can be hidden
 - Week and month view; draw an event into the week, drag it to another time or day, drag its edge to resize
 - Create, edit and delete events, with repeat for new ones; edits show at once and roll back if Google refuses
 - Grey interface in dark and light, following the system; the UI font comes from the Ghostly QShell
@@ -30,7 +31,7 @@ the Secret Service (gnome-keyring) through `secret-tool`, never in a file. Detai
 
 ## Install
 
-Needs Python 3 with PySide6 and `requests`, `secret-tool` (libsecret), a C compiler and the Wayland headers.
+Needs Python 3 with PySide6, `requests` and `python-dateutil`, `secret-tool` (libsecret), a C compiler and the Wayland headers.
 
 ```sh
 ./install.sh

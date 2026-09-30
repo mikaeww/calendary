@@ -10,10 +10,12 @@ from PySide6.QtCore import Property, QObject, QTimer, Signal, Slot
 from calendary import cache, layout
 from calendary.bridge.edits import Edits
 from calendary.bridge.island import ISLAND_FILE, write_island
-from calendary.bridge.signin import SignIn
+from calendary.bridge.signin import SignIn, display
+from calendary.caldav import is_icloud
 from calendary.bridge.sync import STALE_SECONDS, Sync
 from calendary.bridge.worker import Worker
-from calendary.google import CLIENT_FILE, Keyring
+from calendary.google import CLIENT_FILE
+from calendary.keyring import Keyring
 
 WEEK_MS = 7 * 86400000
 
@@ -26,7 +28,7 @@ class Calendar(QObject):
     notice = Signal(str, bool)
 
     def __init__(self, preferences, db=None, keyring=None, files=None):
-        """files: {"island": path, "client": path}; tests redirect both."""
+        """keyring: one keyring for both providers (tests); files: {"island": path, "client": path}."""
         super().__init__()
         files = files or {}
         self.preferences = preferences
@@ -39,7 +41,9 @@ class Calendar(QObject):
         self.worker.failed.connect(lambda message: self.say(message, True))
         self.sync = Sync(self)
         self.edits = Edits(self)
-        self.signin = SignIn(self, keyring or Keyring(), files.get("client", CLIENT_FILE))
+        keyrings = {"google": keyring, "icloud": keyring} if keyring else {"google": Keyring(),
+                                                                           "icloud": Keyring("calendary-icloud")}
+        self.signin = SignIn(self, keyrings, files.get("client", CLIENT_FILE))
         self.timer = QTimer(self, interval=STALE_SECONDS * 1000, timeout=self.sync.everything)
         self.timer.start()
         self.export_island()
@@ -77,15 +81,21 @@ class Calendar(QObject):
     revision = Property(int, lambda self: self.revision_, notify=changed)
     busy = Property(bool, lambda self: self.worker.busy, notify=busyChanged)
     signingIn = Property(bool, lambda self: self.signin.login is not None, notify=signingChanged)
+    connecting = Property(bool, lambda self: self.signin.connecting, notify=signingChanged)
     ready = Property(bool, lambda self: self.signin.ready(), notify=accountsChanged)
 
     def account_list(self):
+        """Per account: key (for actions), name (to show), provider, and its calendars."""
         hidden = self.hidden()
-        return [{"email": email, "calendars": [
-            {"key": cache.event_key(email, row["id"]), "name": row["name"], "color": row["color"],
-             "writable": bool(row["writable"]), "main": bool(row["main"]),
-             "visible": cache.event_key(email, row["id"]) not in hidden}
-            for row in cache.calendars(self.db, email)]} for email in cache.accounts(self.db)]
+        accounts = []
+        for key in cache.accounts(self.db):
+            provider = "icloud" if is_icloud(key) else "google"
+            accounts.append({"key": key, "name": display(key), "provider": provider, "calendars": [
+                {"key": cache.event_key(key, row["id"]), "name": row["name"], "color": row["color"],
+                 "writable": bool(row["writable"]), "main": bool(row["main"]), "provider": provider,
+                 "visible": cache.event_key(key, row["id"]) not in hidden}
+                for row in cache.calendars(self.db, key)]})
+        return accounts
 
     accounts = Property("QVariantList", account_list, notify=accountsChanged)
 
@@ -119,9 +129,13 @@ class Calendar(QObject):
     def cancelSignIn(self):
         self.signin.cancel()
 
+    @Slot(str, str, result=bool)
+    def connectICloud(self, apple_id, password):
+        return self.signin.connect_icloud(apple_id, password)
+
     @Slot(str)
-    def signOut(self, email):
-        self.signin.remove(email)
+    def signOut(self, key):
+        self.signin.remove(key)
 
     @Slot(str, bool)
     def setVisible(self, calendar_key, visible):

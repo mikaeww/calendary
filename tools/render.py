@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Renders the window offscreen with sample events: no real accounts, keyring, network or visible window.
 
-  python3 tools/render.py OUT.png [week|month] [dark|light] [WIDTHxHEIGHT] [editor|settings]
+  python3 tools/render.py OUT.png [week|month] [dark|light] [WIDTHxHEIGHT] [editor|settings|icloud]
 
 Everything the app would write goes to a fresh temporary directory. Evidence for layout only, not for motion.
 """
@@ -69,7 +69,7 @@ def arguments():
             "view": "month" if "month" in args else "week",
             "theme": "light" if "light" in args else "dark",
             "size": [int(v) for v in size.split("x")],
-            "sheet": next((a for a in args if a in ("editor", "settings")), "")}
+            "sheet": next((a for a in args if a in ("editor", "settings", "icloud")), "")}
 
 
 def main():
@@ -88,8 +88,10 @@ def main():
     calendar.signin.client_file = client
     engine = build_engine(preferences, calendar)
     window = shiboken6.wrapInstance(shiboken6.getCppPointer(engine.rootObjects()[0])[0], QQuickWindow)
-    if options["sheet"] == "settings":
+    if options["sheet"] in ("settings", "icloud"):
         window.setProperty("settingsOpen", True)
+        sheet = next(o for o in window.contentItem().childItems() if o.metaObject().className().startswith("SettingsSheet"))
+        sheet.setProperty("addingICloud", options["sheet"] == "icloud")
     elif options["sheet"] == "editor":
         week = calendar.week(float(cache.midnight(datetime.now().date()) - 7 * 86400000), 14)
         ev = next(e for day in week["days"] for e in day if e["title"] == "Gespräch Kunde")

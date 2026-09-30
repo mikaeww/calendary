@@ -11,7 +11,9 @@ QML (src/calendary/qml)                     Python (src/calendary)
 
 | Component | Module | For | Not for |
 |---|---|---|---|
-| google | `google/` | Sign-in (loopback + PKCE), token refresh, Calendar API calls, keyring | Caching, threads |
+| google | `google/` | Sign-in (loopback + PKCE), token refresh, Calendar API calls | Caching, threads |
+| caldav | `caldav/` | iCloud: discovery, iCalendar, local recurrence expansion, same methods as google.Account | Other CalDAV servers |
+| keyring | `keyring.py`, `errors.py` | Secrets per provider in the Secret Service; the shared error type | Anything provider-specific |
 | cache | `cache/` | Google resources to rows and back; SQLite windows | Network, layout |
 | layout | `layout/` | Where events sit in a week (columns, lanes) and in month cells | Drawing, time zones beyond local |
 | bridge | `bridge/` | The QML-facing calendar: threads, optimistic edits, periodic sync, island file | Business rules of Google |
@@ -36,4 +38,5 @@ QML (src/calendary/qml)                     Python (src/calendary)
 | `$XDG_CONFIG_HOME/calendary/calendary.ini` | Preferences as JSON values |
 | `$XDG_DATA_HOME/calendary/calendary.db` | The cache and the list of accounts |
 | `$XDG_CACHE_HOME/calendary/upcoming.json` | Island export |
-| Secret Service `service=calendary account=<email>` | Refresh token per account |
+| Secret Service `service=calendary account=<email>` | Google refresh token per account |
+| Secret Service `service=calendary-icloud account=<apple id>` | iCloud app-specific password |

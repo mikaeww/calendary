@@ -4,7 +4,7 @@ import traceback
 
 from PySide6.QtCore import Property, QObject, Signal
 
-from calendary.google.errors import GoogleError
+from calendary.errors import ServiceError
 
 
 class Worker(QObject):
@@ -28,7 +28,7 @@ class Worker(QObject):
         def work():
             try:
                 result = job()
-            except GoogleError as error:
+            except ServiceError as error:
                 message = str(error)
                 self._deliver.emit(lambda: self._finish(lambda: self._fail(message, fallback)))
                 return

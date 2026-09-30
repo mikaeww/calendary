@@ -5,17 +5,39 @@ import Calendary
 import "../theme"
 import "../controls"
 
-// Accounts (sign in with one button, sign out with a confirmation) and how the calendar looks.
+// Accounts (Google with one button, iCloud with Apple ID and app password, sign out with a confirmation) and looks.
 Sheet {
     id: root
 
     required property var app
     property string leaving: ""
+    property bool addingICloud: false
+    // True while a connect started here is running; its end decides whether the form closes.
+    property bool submitted: false
+
+    function closeICloud() {
+        addingICloud = false;
+        submitted = false;
+        appleId.text = "";
+        appPassword.text = "";
+    }
 
     cardWidth: 480
     onDismissed: app.settingsOpen = false
     onAccepted: app.settingsOpen = false
     onOpenChanged: leaving = ""
+
+    Connections {
+        function onSigningChanged() {
+            if (root.submitted && !Calendar.connecting) {
+                root.submitted = false;
+                if (Calendar.accounts.some(account => account.key === "icloud:" + appleId.text.trim().toLowerCase()))
+                    root.closeICloud();
+            }
+        }
+
+        target: Calendar
+    }
 
     Text {
         text: "Einstellungen"
@@ -28,7 +50,7 @@ Sheet {
 
     SectionLabel {
         topPadding: Theme.space2
-        text: "Google-Konten"
+        text: "Konten"
     }
 
     Repeater {
@@ -38,19 +60,33 @@ Sheet {
             id: account
 
             required property var modelData
-            readonly property bool confirming: root.leaving === modelData.email
+            readonly property bool confirming: root.leaving === modelData.key
 
             width: root.card.width - 2 * Theme.space4
             height: Theme.ctlH
 
-            Text {
+            Row {
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width - signOut.width - Theme.space3
-                text: account.modelData.email
-                color: Theme.fg
-                font.family: Theme.fontUi
-                font.pixelSize: Theme.fsBody
-                elide: Text.ElideMiddle
+                spacing: Theme.space2
+
+                Text {
+                    width: Math.min(implicitWidth, parent.width - provider.implicitWidth - Theme.space2)
+                    text: account.modelData.name
+                    color: Theme.fg
+                    font.family: Theme.fontUi
+                    font.pixelSize: Theme.fsBody
+                    elide: Text.ElideMiddle
+                }
+
+                Text {
+                    id: provider
+
+                    text: account.modelData.provider === "icloud" ? "iCloud" : "Google"
+                    color: Theme.faint
+                    font.family: Theme.fontUi
+                    font.pixelSize: Theme.fsBody
+                }
             }
 
             Button {
@@ -62,10 +98,10 @@ Sheet {
                 strong: account.confirming
                 onClicked: {
                     if (!account.confirming) {
-                        root.leaving = account.modelData.email;
+                        root.leaving = account.modelData.key;
                         return;
                     }
-                    Calendar.signOut(account.modelData.email);
+                    Calendar.signOut(account.modelData.key);
                     root.leaving = "";
                 }
             }
@@ -78,7 +114,7 @@ Sheet {
         Button {
             visible: !Calendar.signingIn
             enabled: Calendar.ready
-            label: Calendar.accounts.length ? "Weiteres Konto anmelden" : "Mit Google anmelden"
+            label: "Mit Google anmelden"
             primary: true
             onClicked: Calendar.signIn()
         }
@@ -87,6 +123,15 @@ Sheet {
             visible: Calendar.signingIn
             label: "Anmeldung abbrechen"
             onClicked: Calendar.cancelSignIn()
+        }
+
+        Button {
+            visible: !root.addingICloud
+            label: "iCloud verbinden"
+            onClicked: {
+                root.addingICloud = true;
+                appleId.input.forceActiveFocus();
+            }
         }
 
         Text {
@@ -107,6 +152,57 @@ Sheet {
         color: Theme.sub
         font.family: Theme.fontUi
         font.pixelSize: Theme.fsSmall
+    }
+
+    Column {
+        visible: root.addingICloud
+        width: parent.width
+        spacing: Theme.space2
+
+        Text {
+            width: parent.width
+            wrapMode: Text.Wrap
+            text: "iCloud braucht deine Apple-ID und ein app-spezifisches Passwort, nicht dein normales Passwort. Du erstellst es auf account.apple.com unter „Anmeldung und Sicherheit“."
+            color: Theme.sub
+            font.family: Theme.fontUi
+            font.pixelSize: Theme.fsSmall
+        }
+
+        Field {
+            id: appleId
+
+            width: parent.width
+            placeholder: "Apple-ID (E-Mail)"
+        }
+
+        Field {
+            id: appPassword
+
+            width: parent.width
+            placeholder: "App-spezifisches Passwort (xxxx-xxxx-xxxx-xxxx)"
+            input.echoMode: TextInput.Password
+        }
+
+        Row {
+            spacing: Theme.space2
+
+            Button {
+                enabled: !Calendar.connecting
+                label: Calendar.connecting ? "Prüfe bei iCloud …" : "Verbinden"
+                strong: true
+                onClicked: root.submitted = Calendar.connectICloud(appleId.text, appPassword.text)
+            }
+
+            Button {
+                label: "Passwort erstellen"
+                onClicked: Qt.openUrlExternally("https://account.apple.com/account/manage")
+            }
+
+            Button {
+                label: "Abbrechen"
+                onClicked: root.closeICloud()
+            }
+        }
     }
 
     SectionLabel {

@@ -1,36 +1,51 @@
-"""Accounts: browser sign-in, restoring signed-in accounts at start, signing out. Not for syncing."""
+"""Accounts: Google browser sign-in, iCloud with Apple ID and app-specific password, restoring and signing out.
+
+Secrets go to the keyring only after they worked once. Not for syncing.
+"""
+import re
+
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices
 
 from calendary import cache
+from calendary.caldav import ICloudAccount, apple_id_of, is_icloud
 from calendary.google import Account, Login, load_client
 
 MISSING_CLIENT = "Google-Anmeldung ist nicht eingerichtet: google-client.json fehlt im App-Ordner (siehe README)"
+APP_PASSWORD = re.compile(r"[a-z]{4}-?[a-z]{4}-?[a-z]{4}-?[a-z]{4}")
 
 
 class SignIn:
-    def __init__(self, calendar, keyring, client_file):
-        self.calendar, self.keyring, self.client_file = calendar, keyring, client_file
+    def __init__(self, calendar, keyrings, client_file):
+        """keyrings: {"google": Keyring, "icloud": Keyring}."""
+        self.calendar, self.keyrings, self.client_file = calendar, keyrings, client_file
         self.login = None
+        self.connecting = False
 
     def ready(self):
         return load_client(self.client_file) is not None
 
     def restore(self):
-        """Accounts in the cache get their refresh tokens back from the keyring, then everything syncs."""
+        """Accounts in the cache get their secrets back from the keyring, then everything syncs."""
         client = load_client(self.client_file)
-        emails = cache.accounts(self.calendar.db)
-        if not client or not emails:
+        keys = [key for key in cache.accounts(self.calendar.db) if is_icloud(key) or client]
+        if not keys:
             return
 
-        def ready(tokens):
-            for email, token in tokens.items():
-                if token:
-                    self.calendar.remote[email] = Account(client, email, token)
+        def secrets():
+            return {key: self.keyrings["icloud"].lookup(apple_id_of(key)) if is_icloud(key)
+                    else self.keyrings["google"].lookup(key) for key in keys}
+
+        def ready(found):
+            for key, secret in found.items():
+                if not secret:
+                    self.calendar.say("%s ist abgemeldet, bitte neu anmelden" % display(key), True)
+                elif is_icloud(key):
+                    self.calendar.remote[key] = ICloudAccount(apple_id_of(key), secret)
                 else:
-                    self.calendar.say("%s ist abgemeldet, bitte neu anmelden" % email, True)
+                    self.calendar.remote[key] = Account(client, key, secret)
             self.calendar.sync.everything()
-        self.calendar.worker.run(lambda: {email: self.keyring.lookup(email) for email in emails}, ready)
+        self.calendar.worker.run(secrets, ready)
 
     def start(self):
         client = load_client(self.client_file)
@@ -46,30 +61,60 @@ class SignIn:
 
         def job():
             email, token = login.wait()
-            self.keyring.store(email, token)
-            return email, token
+            self.keyrings["google"].store(email, token)
+            return Account(client, email, token)
+        self.calendar.worker.run(job, self.added, self.finished)
 
-        def done(result):
-            email, token = result
-            self.finished()
-            cache.add_account(self.calendar.db, email)
-            self.calendar.remote[email] = Account(client, email, token)
-            self.calendar.accounts_changed()
-            self.calendar.say("%s ist verbunden" % email, False)
-            self.calendar.sync.refresh(email)
-        self.calendar.worker.run(job, done, self.finished)
+    def connect_icloud(self, apple_id, password):
+        """Checks the input, signs in once, and only then stores the password; False when the input is unusable."""
+        apple_id, typed = apple_id.strip(), password.replace(" ", "").strip().lower()
+        if "@" not in apple_id or not APP_PASSWORD.fullmatch(typed):
+            self.calendar.say("Apple-ID und ein app-spezifisches Passwort (xxxx-xxxx-xxxx-xxxx) eingeben", True)
+            return False
+        # Apple shows these passwords as four dashed groups; keep that form whatever was typed.
+        letters = typed.replace("-", "")
+        password = "-".join(letters[i:i + 4] for i in range(0, 16, 4))
+        if self.connecting:
+            return False
+        self.connecting = True
+        self.calendar.signing_changed()
+
+        def job():
+            account = ICloudAccount(apple_id, password)
+            account.verify()
+            self.keyrings["icloud"].store(apple_id.lower(), password)
+            return account
+        self.calendar.worker.run(job, self.added, self.finished)
+        return True
+
+    def added(self, account):
+        self.finished()
+        cache.add_account(self.calendar.db, account.email)
+        self.calendar.remote[account.email] = account
+        self.calendar.accounts_changed()
+        self.calendar.say("%s ist verbunden" % display(account.email), False)
+        self.calendar.sync.refresh(account.email)
 
     def finished(self):
         self.login = None
+        self.connecting = False
         self.calendar.signing_changed()
 
     def cancel(self):
         if self.login:
             self.login.cancel()
 
-    def remove(self, email):
-        self.calendar.remote.pop(email, None)
-        cache.remove_account(self.calendar.db, email)
+    def remove(self, key):
+        self.calendar.remote.pop(key, None)
+        cache.remove_account(self.calendar.db, key)
         self.calendar.accounts_changed()
         self.calendar.bump()
-        self.calendar.worker.run(lambda: self.keyring.clear(email), lambda _: None)
+        if is_icloud(key):
+            self.calendar.worker.run(lambda: self.keyrings["icloud"].clear(apple_id_of(key)), lambda _: None)
+        else:
+            self.calendar.worker.run(lambda: self.keyrings["google"].clear(key), lambda _: None)
+
+
+def display(key):
+    """The address the interface shows for an account key."""
+    return apple_id_of(key) if is_icloud(key) else key

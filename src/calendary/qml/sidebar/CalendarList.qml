@@ -9,6 +9,8 @@ import "../controls"
 Column {
     id: root
 
+    required property var app
+
     spacing: Theme.space4
 
     Column {
@@ -37,6 +39,11 @@ Column {
             label: "Abbrechen"
             onClicked: Calendar.cancelSignIn()
         }
+
+        Button {
+            label: "iCloud verbinden"
+            onClicked: root.app.settingsOpen = true
+        }
     }
 
     Repeater {
@@ -54,7 +61,7 @@ Column {
                 x: Theme.space2
                 width: parent.width - 2 * Theme.space2
                 bottomPadding: Theme.space1
-                text: account.modelData.email
+                text: account.modelData.name
                 elide: Text.ElideMiddle
             }
 

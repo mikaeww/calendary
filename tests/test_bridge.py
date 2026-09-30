@@ -152,14 +152,37 @@ class BridgeTest(unittest.TestCase):
         self.assertEqual(self.fake.calls[-1], ("delete", {"id": "e1"}))
         self.calendar.signOut("me")
         self.settle()
-        self.assertEqual((self.calendar.accounts[0]["email"], len(self.calendar.accounts)), ("gone", 1))
-        self.assertIsNone(self.calendar.signin.keyring.lookup("me"))
+        self.assertEqual((self.calendar.accounts[0]["key"], len(self.calendar.accounts)), ("gone", 1))
+        self.assertIsNone(self.calendar.signin.keyrings["google"].lookup("me"))
 
     def test_sign_in_without_client_says_so(self):
         self.calendar.signin.client_file = Path(self.tmp.name, "missing.json")
         self.calendar.signIn()
         self.assertTrue(self.notices[-1].startswith("Google-Anmeldung ist nicht eingerichtet"))
         self.assertFalse(self.calendar.signingIn)
+
+    def test_icloud_is_stored_only_after_it_worked(self):
+        class FakeICloud(FakeGoogle):
+            def __init__(self, apple_id, password):
+                super().__init__("icloud:" + apple_id.lower())
+                self.password = password
+
+            def verify(self):
+                if self.password != "abcd-efgh-ijkl-mnop":
+                    raise GoogleError("iCloud lehnt die Anmeldung ab")
+
+        keyring = self.calendar.signin.keyrings["icloud"]
+        with mock.patch("calendary.bridge.signin.ICloudAccount", FakeICloud):
+            self.assertFalse(self.calendar.connectICloud("alex@icloud.com", "mein normales passwort"))
+            self.assertTrue(self.calendar.connectICloud("Alex@iCloud.com", "wxyz-wxyz-wxyz-wxyz"))
+            self.settle()
+            self.assertIsNone(keyring.lookup("alex@icloud.com"))
+            self.assertTrue(self.calendar.connectICloud("Alex@iCloud.com", "ABCD EFGH IJKL MNOP"))
+            self.settle()
+        self.assertEqual(keyring.lookup("alex@icloud.com"), "abcd-efgh-ijkl-mnop")
+        names = [(a["name"], a["provider"]) for a in self.calendar.accounts]
+        self.assertIn(("alex@icloud.com", "icloud"), names)
+        self.assertIn("iCloud lehnt die Anmeldung ab", self.notices)
 
 
 class IslandTest(unittest.TestCase):

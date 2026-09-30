@@ -1,5 +1,6 @@
-"""The one error type of the Google package; its message is German and shown to the user as is."""
+"""Google's errors are service errors; the subclass only says where they came from."""
+from calendary.errors import ServiceError
 
 
-class GoogleError(Exception):
-    """A Google or keyring operation failed; `str()` says what happened and what to do."""
+class GoogleError(ServiceError):
+    """A Google operation failed; `str()` says what happened and what to do."""

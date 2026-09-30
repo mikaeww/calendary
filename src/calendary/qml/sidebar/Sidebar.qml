@@ -67,6 +67,7 @@ Item {
             id: list
 
             width: scroll.width
+            app: root.app
         }
     }
 

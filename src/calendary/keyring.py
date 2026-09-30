@@ -1,7 +1,10 @@
-"""Refresh tokens in the Secret Service through `secret-tool`, one item per account. Never in a file."""
+"""Secrets in the Secret Service through `secret-tool`, one item per account and service. Never in a file.
+
+Google refresh tokens use the service `calendary`, iCloud app-specific passwords `calendary-icloud`.
+"""
 import subprocess
 
-from calendary.google.errors import GoogleError
+from calendary.errors import ServiceError
 
 TIMEOUT = 20
 
@@ -16,13 +19,13 @@ class Keyring:
         try:
             return subprocess.run(["secret-tool", *args], input=secret, capture_output=True, timeout=TIMEOUT)
         except (OSError, subprocess.SubprocessError) as error:
-            raise GoogleError("Schlüsselbund nicht erreichbar (secret-tool): %s" % error) from error
+            raise ServiceError("Schlüsselbund nicht erreichbar (secret-tool): %s" % error) from error
 
     def store(self, email, token):
-        done = self._run(["store", "--label", "Calendary: " + email, "service", self.service, "account", email],
+        done = self._run(["store", "--label", "Calendary (%s): %s" % (self.service, email), "service", self.service, "account", email],
                          token.encode())
         if done.returncode != 0:
-            raise GoogleError("Anmeldung konnte nicht im Schlüsselbund gespeichert werden")
+            raise ServiceError("Anmeldung konnte nicht im Schlüsselbund gespeichert werden")
 
     def lookup(self, email):
         """The refresh token, or None when the keyring has none for this account."""

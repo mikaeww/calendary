@@ -34,7 +34,8 @@ Forbidden module names: `utils`, `util`, `helpers`, `helper`, `misc`, `common`, 
 - Errors are never swallowed silently; a deliberate ignore carries a comment saying why.
 - Network and keyring calls run on worker threads; only the GUI thread touches the database.
 - Tests touch only files, processes and keyring entries they created. The real keyring is never used in tests.
-- Dependencies: Python 3 stdlib, PySide6, `requests`, `secret-tool`. Nothing else without an ADR.
+- Dependencies: Python 3 stdlib, PySide6, `requests`, `python-dateutil` (ADR 0005), `secret-tool`. Nothing else
+  without an ADR.
 
 ## Interface
 

@@ -16,3 +16,4 @@
 | [verification/layout.md](verification/layout.md) | Week columns, all-day lanes, month cells |
 | [verification/dates.md](verification/dates.md) | Date arithmetic and parsing in `qml/calendar/dates.js` |
 | [verification/google.md](verification/google.md) | Sign-in, token refresh, API calls, bridge behaviour |
+| [verification/caldav.md](verification/caldav.md) | iCalendar reading and writing, recurrence, CalDAV discovery and edits |

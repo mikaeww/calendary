@@ -20,6 +20,8 @@ Sheet {
     readonly property bool existing: !!(ev && ev.key)
     readonly property bool writable: !existing || !!ev.writable
     readonly property var calendars: Calendar.accounts.reduce((all, account) => all.concat(account.calendars.filter(cal => cal.writable || (root.ev && cal.key === root.ev.calendarKey))), [])
+    // iCloud does not take new series yet (ADR 0005), so repeat is only offered for Google calendars.
+    readonly property bool canRepeat: !existing && (calendars.find(cal => cal.key === calendarKey) || {}).provider === "google"
     readonly property var repeats: [["", "Einmalig"], ["DAILY", "Täglich"], ["WEEKLY", "Wöchentlich"], ["MONTHLY", "Monatlich"], ["YEARLY", "Jährlich"]]
 
     function save() {
@@ -41,7 +43,7 @@ Sheet {
             allDay: allDay,
             start: span.start,
             end: span.end,
-            repeat: existing ? "" : repeat
+            repeat: canRepeat ? repeat : ""
         });
         ev = null;
     }
@@ -124,7 +126,7 @@ Sheet {
         }
 
         Repeater {
-            model: root.existing ? [] : root.repeats
+            model: root.canRepeat ? root.repeats : []
 
             Chip {
                 required property var modelData

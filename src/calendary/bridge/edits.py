@@ -35,9 +35,11 @@ class Edits:
                 created = remote.insert(calendar, body)
                 previous.delete(old[1], old[2])
                 return created
+            event = old[2]
             if old[1] != calendar:
-                remote.move(old[1], old[2], calendar)
-            return remote.patch(calendar, old[2], body)
+                # Google keeps the id when moving, CalDAV gives the resource a new URL.
+                event = remote.move(old[1], old[2], calendar).get("id", old[2])
+            return remote.patch(calendar, event, body)
 
         def settle(item):
             with self.calendar.db:
