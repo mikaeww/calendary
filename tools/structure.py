@@ -10,7 +10,7 @@ states as its coverage. Not a formatter and not a type checker.
 import ast
 import os
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 MAX_FILE_LINES = 500
 MAX_CODE_FILES = 8
@@ -76,7 +76,7 @@ def python_findings(node, in_library):
 
 def check_directory(root, directory, files):
     problems = []
-    relative = directory.relative_to(root)
+    relative = PurePosixPath(directory.relative_to(root).as_posix())
     if directory.name in FORBIDDEN:
         problems.append(f"{relative}: forbidden directory name")
     code = [f for f in files if kind(f) == "code" and f.name not in ENTRY and not f.name.endswith(".test.js")]
@@ -95,7 +95,7 @@ def check_file(root, path, coverage):
     found = kind(path)
     if not found:
         return problems
-    relative = path.relative_to(root)
+    relative = PurePosixPath(path.relative_to(root).as_posix())
     coverage[path.suffix or "script"] = coverage.get(path.suffix or "script", 0) + 1
     lines = len(path.read_text(errors="replace").splitlines())
     if lines > MAX_FILE_LINES:

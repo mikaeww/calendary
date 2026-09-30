@@ -16,6 +16,8 @@ _saved_tz = None
 
 def setUpModule():
     global _saved_tz
+    if not hasattr(time, "tzset"):
+        raise unittest.SkipTest("pinning the time zone needs time.tzset, which Windows lacks")
     _saved_tz = os.environ.get("TZ")
     os.environ["TZ"] = ZONE
     time.tzset()
