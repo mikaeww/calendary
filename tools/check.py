@@ -11,6 +11,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -52,6 +53,14 @@ def qml_format(fix):
         raise SystemExit("check: not qmlformat-clean (run with --fix): " + ", ".join(unformatted))
 
 
+def qml_lint():
+    """qmllint against the real Qt modules plus a description of the Python singletons generated right now."""
+    with tempfile.TemporaryDirectory(prefix="calendary-lint-") as types:
+        env = dict(os.environ, QT_QPA_PLATFORM="offscreen")
+        run("qmltypes", [sys.executable, "tools/qmltypes.py", types], env=env, stdout=subprocess.DEVNULL)
+        run("qmllint", [tool("qmllint"), "--max-warnings", "0", "-I", types, "-I", str(QML), *map(str, qml_files())])
+
+
 def main():
     os.nice(19)
     subprocess.run(["ionice", "-c3", "-p", str(os.getpid())], check=False)
@@ -59,7 +68,7 @@ def main():
     run("compile", [sys.executable, "-m", "compileall", "-q", "src", "tools", "tests"])
     if qml_files():
         qml_format("--fix" in sys.argv)
-        run("qmllint", [tool("qmllint"), "--bare", "-I", str(QML), *map(str, qml_files())])
+        qml_lint()
     env = dict(os.environ, QT_QPA_PLATFORM="offscreen", PYTHONPATH=str(ROOT / "src"))
     run("python tests", [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-t", "."], env=env)
     for test in sorted((ROOT / "tests").glob("*.test.js")):

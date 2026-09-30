@@ -8,7 +8,8 @@ Binding rules for Calendary, derived from the `clean-project` skill. Deviations 
 - `src/calendary/qml/` holds the interface. `Main.qml` is the window; everything else lives in a named directory
   (`theme`, `motion`, `controls`, `calendar`, `sidebar`, `sheets`).
 - `tests/` checks the public operations of the package and the pure QML logic (`*.test.js`).
-- `tools/` holds dev commands: `check.py`, `structure.py`, `render.py`.
+- `tools/` holds dev commands: `check.py`, `structure.py`, `qmltypes.py` (describes the Python singletons to
+  qmllint), `render.py` (offscreen screenshots with sample data).
 
 ## Hard limits
 
@@ -43,8 +44,12 @@ Forbidden module names: `utils`, `util`, `helpers`, `helper`, `misc`, `common`, 
 - No borders, lines or shadows as structure; depth is a brightness step. Radii come in two steps: surfaces and
   controls. No pill shapes.
 - Dark and light palettes both exist; the default follows the system, the choice is saved.
-- Motion follows `qml/motion/`: finite transitions use minimum jerk, interactive ones a critically damped spring
-  that keeps its velocity on retarget. Reduced motion shortens paths to opacity.
+- Motion follows `qml/motion/`: everything that can be interrupted (paging, view switch, sheets, the segmented
+  control) runs on one analytic, critically damped spring driven by the render loop, which keeps position and
+  velocity on retarget and lands exactly on its target. Hover and colour changes use a short native transition.
+  Reduced motion removes travel and keeps fades.
+- Every QML file declares `pragma ComponentBehavior: Bound`; delegates reach model data only through required
+  properties.
 - UI text is German, code and docs are English.
 
 ## Workflow
