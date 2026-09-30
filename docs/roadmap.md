@@ -10,7 +10,7 @@ Goal: sign in with Google, see week and month, create, move, resize, edit and de
 | Cache, week/month layout, Google API, sign-in | done, verified offline, see `verification/` |
 | Interface: sidebar, week, month, editor, settings, dark and light | done, offscreen-tested |
 | Island export for the Ghostly QShell | done; the shell's `CalendarView.qml` reads it |
-| Sign-in against real Google | open: needs the owner's OAuth client (`google-client.json`) |
+| Sign-in against real Google | done 2026-09-30, see `verification/google.md` |
 
 ## Phase 2: comfort
 

@@ -27,7 +27,10 @@ All tests pass. The manual sign-in is recorded below with date and result once d
 ## Results
 - 2026-09-30, `tests/test_google.py`, `tests/test_bridge.py`: claims 1 to 5 pass (RFC 7636 vector also
   recomputed with openssl; loopback tested with real HTTP on 127.0.0.1; bridge with fake Google and keyring).
-- Manual sign-in against Google: not yet done, the OAuth client does not exist yet.
+- 2026-09-30, manual sign-in against Google with the owner's account: passed. Client of type Desktop app, project
+  "In production", unverified. Four calendars listed (primary, Familie, two read-only subscriptions). A family
+  calendar with 0 events on screen was checked against the API directly: Google also returns 0 instances for the
+  fetched window (±31 days); its 8 instances within ±1 year are yearly all-day events in January, March and April.
 
 ## Known gaps
 Token revocation surfaces as a notice "… neu anmelden"; there is no automatic re-sign-in.
