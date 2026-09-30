@@ -1,0 +1,87 @@
+name: Windows release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version without the v prefix
+        required: true
+        type: string
+      publish:
+        description: Create the GitHub release (off = build and test only)
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Tests on Windows
+        env:
+          QT_QPA_PLATFORM: offscreen
+          PYTHONPATH: src
+        run: |
+          python -m pip install --disable-pip-version-check PySide6-Essentials==6.11.1 requests python-dateutil tzdata
+          python -m unittest discover -s tests -t .
+
+      - name: Render the interface on Windows
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          python tools/render.py dist/week-dark.png week dark
+          python tools/render.py dist/month-light.png month light
+
+      - name: Install NSIS
+        shell: pwsh
+        run: |
+          choco install nsis --version 3.12.0 --yes --no-progress
+          Join-Path ${env:ProgramFiles(x86)} 'NSIS' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Build installer
+        shell: pwsh
+        env:
+          GOOGLE_CLIENT_JSON: ${{ secrets.GOOGLE_CLIENT_JSON }}
+        run: |
+          if (-not $env:GOOGLE_CLIENT_JSON) { throw "Repository secret GOOGLE_CLIENT_JSON is missing" }
+          [IO.File]::WriteAllText("$PWD\google-client.json", $env:GOOGLE_CLIENT_JSON)
+          python tools/build_windows.py '${{ inputs.version }}'
+
+      - name: Install silently and smoke-test
+        shell: pwsh
+        run: |
+          Start-Process -Wait -FilePath "dist\Calendary-${{ inputs.version }}-x64-setup.exe" -ArgumentList '/S'
+          $App = Join-Path $env:LOCALAPPDATA 'Programs\Calendary'
+          & "$App\python\python.exe" tools\windows_smoke.py
+          if ($LASTEXITCODE -ne 0) { throw "Smoke test failed" }
+          Start-Process -Wait -FilePath "$App\Uninstall.exe" -ArgumentList '/S'
+          Start-Sleep -Seconds 3
+          if (Test-Path "$App\python") { throw "Uninstall left the program behind" }
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Calendary-${{ inputs.version }}-Windows-x64
+          path: |
+            dist/Calendary-${{ inputs.version }}-x64-setup.exe
+            dist/*.png
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        if: ${{ inputs.publish }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          gh release create "v$env:VERSION" "dist/Calendary-$env:VERSION-x64-setup.exe" `
+            --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "Calendary $env:VERSION" `
+            --notes "First Windows build. Run the installer; Calendary appears in the Start menu. Google sign-in works as on Linux, secrets go to the Windows Credential Manager. Settings and the event cache live in .config, .local and .cache in the user folder."

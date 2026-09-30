@@ -2,7 +2,7 @@
 
 # Calendary
 
-A calendar for Google accounts and iCloud calendars on Linux, made for Hyprland. Python with Qt Quick (PySide6).
+A calendar for Google accounts and iCloud calendars on Linux, made for Hyprland, and on Windows. Python with Qt Quick (PySide6).
 
 - Sign in with Google in the browser, one button; iCloud with the Apple ID and an app-specific password
   (account.apple.com → Sign-In and Security); several accounts, every calendar can be hidden
@@ -37,6 +37,20 @@ Needs Python 3 with PySide6, `requests` and `python-dateutil`, `secret-tool` (li
 ./install.sh
 calendary
 ```
+
+## Windows
+
+The release workflow builds an NSIS installer (`Calendary-X.Y.Z-x64-setup.exe`): embedded Python, PySide6 and the
+OAuth client, installed per user into `%LOCALAPPDATA%\Programs\Calendary` with a Start menu entry. Secrets go to
+the Windows Credential Manager. The workflow needs the repository secret `GOOGLE_CLIENT_JSON` with the content of
+`google-client.json`, then:
+
+```sh
+gh workflow run "Windows release" -f version=0.1.0
+```
+
+It runs the tests on Windows, installs, smoke-tests and uninstalls, and only then publishes. Details: ADR
+[0006](docs/decisions/0006-windows-build.md).
 
 ## Shortcuts
 

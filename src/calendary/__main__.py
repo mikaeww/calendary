@@ -1,4 +1,4 @@
-"""`python3 -m calendary`: the Hyprland workaround, the application object and the window."""
+"""`python3 -m calendary`: the Hyprland workaround or the Windows taskbar entry, the application object and the window."""
 import sys
 from pathlib import Path
 
@@ -12,6 +12,9 @@ ICON = Path(__file__).resolve().parents[2] / "assets/icons/calendary.svg"
 
 def main():
     preload_nosuspend()
+    if sys.platform == "win32":
+        from calendary.platform.windows import use_own_taskbar_entry
+        use_own_taskbar_entry()
     QGuiApplication.setApplicationName("Calendary")
     QGuiApplication.setDesktopFileName("calendary")
     app = QGuiApplication(sys.argv)

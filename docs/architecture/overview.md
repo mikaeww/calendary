@@ -13,12 +13,12 @@ QML (src/calendary/qml)                     Python (src/calendary)
 |---|---|---|---|
 | google | `google/` | Sign-in (loopback + PKCE), token refresh, Calendar API calls | Caching, threads |
 | caldav | `caldav/` | iCloud: discovery, iCalendar, local recurrence expansion, same methods as google.Account | Other CalDAV servers |
-| keyring | `keyring.py`, `errors.py` | Secrets per provider in the Secret Service; the shared error type | Anything provider-specific |
+| keyring | `keyring.py`, `errors.py` | Secrets per provider in the Secret Service (Credential Manager on Windows); the shared error type | Anything provider-specific |
 | cache | `cache/` | Google resources to rows and back; SQLite windows | Network, layout |
 | layout | `layout/` | Where events sit in a week (columns, lanes) and in month cells | Drawing, time zones beyond local |
 | bridge | `bridge/` | The QML-facing calendar: threads, optimistic edits, periodic sync, island file | Business rules of Google |
 | preferences | `preferences.py`, `desktop.py` | Saved view settings; font and reduced motion from the shell | Colours (those are QML tokens) |
-| platform | `platform/` | The Hyprland suspend workaround (`nosuspend.c`, preload) | Anything portable |
+| platform | `platform/` | The Hyprland suspend workaround (`nosuspend.c`, preload); Windows Credential Manager and taskbar id (`windows.py`) | Anything portable |
 | qml | `qml/` | Everything visible; tokens in `theme/`, motion maths in `motion/` | Network or database access |
 
 ## Data flow
@@ -40,3 +40,4 @@ QML (src/calendary/qml)                     Python (src/calendary)
 | `$XDG_CACHE_HOME/calendary/upcoming.json` | Island export |
 | Secret Service `service=calendary account=<email>` | Google refresh token per account |
 | Secret Service `service=calendary-icloud account=<apple id>` | iCloud app-specific password |
+| Windows Credential Manager `calendary/<email>`, `calendary-icloud/<apple id>` | The same secrets on Windows (ADR 0006) |

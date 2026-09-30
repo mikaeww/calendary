@@ -9,7 +9,8 @@ Binding rules for Calendary, derived from the `clean-project` skill. Deviations 
   (`theme`, `motion`, `controls`, `calendar`, `sidebar`, `sheets`).
 - `tests/` checks the public operations of the package and the pure QML logic (`*.test.js`).
 - `tools/` holds dev commands: `check.py`, `structure.py`, `qmltypes.py` (describes the Python singletons to
-  qmllint), `render.py` (offscreen screenshots with sample data).
+  qmllint), `render.py` (offscreen screenshots with sample data), `build_windows.py` and `windows_smoke.py`
+  (Windows installer, ADR 0006).
 
 ## Hard limits
 
@@ -34,8 +35,8 @@ Forbidden module names: `utils`, `util`, `helpers`, `helper`, `misc`, `common`, 
 - Errors are never swallowed silently; a deliberate ignore carries a comment saying why.
 - Network and keyring calls run on worker threads; only the GUI thread touches the database.
 - Tests touch only files, processes and keyring entries they created. The real keyring is never used in tests.
-- Dependencies: Python 3 stdlib, PySide6, `requests`, `python-dateutil` (ADR 0005), `secret-tool`. Nothing else
-  without an ADR.
+- Dependencies: Python 3 stdlib, PySide6, `requests`, `python-dateutil` (ADR 0005), `secret-tool` on Linux,
+  `tzdata` on Windows (ADR 0006). Nothing else without an ADR.
 
 ## Interface
 
