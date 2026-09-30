@@ -11,8 +11,8 @@ A calendar for Google accounts and iCloud calendars on Linux, made for Hyprland.
 - Grey interface in dark and light, following the system; the UI font comes from the Ghostly QShell
 - The next events go to `~/.cache/calendary/upcoming.json` for the shell's island
 
-The interface is German. Status: phase 1 done and verified offline; sign-in against real Google is still to be
-checked by hand, see [docs/roadmap.md](docs/roadmap.md).
+The interface is German. Status: Google works against the real service; iCloud is verified against a fake CalDAV
+server and still to be tried against real iCloud, see [docs/roadmap.md](docs/roadmap.md).
 
 ## One-time Google setup (for whoever installs it)
 
