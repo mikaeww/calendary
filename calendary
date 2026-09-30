@@ -1,0 +1,4 @@
+#!/bin/sh
+# Starts Calendary from this checkout; install.sh links ~/.local/bin/calendary here.
+here=$(dirname "$(readlink -f "$0")")
+PYTHONPATH="$here/src${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m calendary "$@"

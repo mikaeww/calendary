@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Calendary
+GenericName=Kalender
+Comment=Google-Kalender mit Wochen- und Monatsansicht
+Exec=calendary
+Icon=calendary
+Terminal=false
+Categories=Office;Calendar;
+Keywords=Kalender;Termine;Google;calendar;events;
+StartupWMClass=calendary
