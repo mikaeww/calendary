@@ -26,6 +26,8 @@ repository secret `GOOGLE_CLIENT_JSON` and is part of the installer.
 - The installer is about the size of PySide6-Essentials; Task Manager shows `pythonw.exe`, the taskbar shows
   Calendary through its own app id.
 - The installer contains the OAuth client, so releases stay in the private repository.
+- The icon glyphs came from the owner's installed Monofur Nerd Font and were boxes on Windows; the seven used
+  Material Design Icons now ship as `assets/fonts/calendary-icons.ttf` ("Calendary Icons"), on both platforms.
 - Settings, cache and island file use the XDG fallbacks in the user folder (`.config`, `.local`, `.cache`).
 - The release workflow runs the unit tests on Windows, renders the interface, installs silently, runs
   `tools/windows_smoke.py` and uninstalls before it publishes.

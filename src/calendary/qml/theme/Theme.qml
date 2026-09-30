@@ -42,8 +42,8 @@ QtObject {
     readonly property int ctlH: 26
 
     readonly property string fontUi: Preferences.fontUi
-    readonly property string iconFont: "Monofur Nerd Font"
-    // Material Design Icons code points from the Nerd Font.
+    readonly property string iconFont: "Calendary Icons"
+    // Material Design Icons code points; assets/fonts/calendary-icons.ttf holds exactly these, loaded by app.py.
     readonly property var glyph: ({
             left: "\u{F0141}",
             right: "\u{F0142}",

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds the Windows installer: embeddable Python, the wheels, src/, the icons and the OAuth client, packed by NSIS.
+"""Builds the Windows installer: embeddable Python, the wheels, src/, assets/ and the OAuth client, packed by NSIS.
 
 Runs on Windows with the Python version it bundles and `makensis` on PATH; the release workflow sets up both. The
 checkout layout is kept (python/, src/, assets/, google-client.json side by side), so every path the package
@@ -44,7 +44,7 @@ def stage():
     STAGE.mkdir(parents=True)
     embed_python(STAGE / "python")
     shutil.copytree(ROOT / "src/calendary", STAGE / "src/calendary", ignore=IGNORE)
-    shutil.copytree(ROOT / "assets/icons", STAGE / "assets/icons")
+    shutil.copytree(ROOT / "assets", STAGE / "assets")
     for name in ("google-client.json", "LICENSE"):
         shutil.copy2(ROOT / name, STAGE / name)
 
