@@ -36,6 +36,8 @@ jobs:
           python -m unittest discover -s tests -t .
 
       - name: Render the interface on Windows
+        env:
+          QT_QPA_FONTDIR: C:\Windows\Fonts
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
           python tools/render.py dist/week-dark.png week dark
@@ -61,7 +63,7 @@ jobs:
         run: |
           Start-Process -Wait -FilePath "dist\Calendary-${{ inputs.version }}-x64-setup.exe" -ArgumentList '/S'
           $App = Join-Path $env:LOCALAPPDATA 'Programs\Calendary'
-          & "$App\python\python.exe" tools\windows_smoke.py
+          & "$App\python\python.exe" tools\windows_smoke.py dist\installed-app.png
           if ($LASTEXITCODE -ne 0) { throw "Smoke test failed" }
           Start-Process -Wait -FilePath "$App\Uninstall.exe" -ArgumentList '/S'
           Start-Sleep -Seconds 3
