@@ -11,7 +11,8 @@ import requests
 from calendary.errors import ServiceError
 
 TIMEOUT = 20
-NS = {"d": "DAV:", "c": "urn:ietf:params:xml:ns:caldav", "a": "http://apple.com/ns/ical/"}
+NS = {"d": "DAV:", "c": "urn:ietf:params:xml:ns:caldav", "a": "http://apple.com/ns/ical/",
+      "cs": "http://calendarserver.org/ns/"}
 REDIRECTS = (301, 302, 303, 307, 308)
 
 
@@ -74,8 +75,8 @@ class Dav:
     def propfind(self, url, names, depth=0):
         """names like "d:displayname"; returns multistatus()."""
         props = "".join("<%s/>" % name for name in names)
-        body = ('<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:" xmlns:c="%s" xmlns:a="%s">'
-                "<d:prop>%s</d:prop></d:propfind>" % (NS["c"], NS["a"], props))
+        body = ('<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:" xmlns:c="%s" xmlns:a="%s"'
+                ' xmlns:cs="%s"><d:prop>%s</d:prop></d:propfind>' % (NS["c"], NS["a"], NS["cs"], props))
         return self.multistatus("PROPFIND", url, body, depth)
 
     def report(self, url, body):

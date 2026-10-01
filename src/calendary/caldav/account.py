@@ -19,10 +19,10 @@ PREFIX = "icloud:"
 SERIES = "Serien aus iCloud lassen sich in Calendary noch nicht bearbeiten, bitte am Handy ändern"
 CALENDAR_PROPS = ["d:resourcetype", "d:displayname", "a:calendar-color", "c:supported-calendar-component-set",
                   "d:current-user-privilege-set"]
-QUERY = ('<?xml version="1.0" encoding="utf-8"?><c:calendar-query xmlns:d="DAV:" xmlns:c="%s">'
-         '<d:prop><d:getetag/><c:calendar-data/></d:prop><c:filter><c:comp-filter name="VCALENDAR">'
+QUERY = ('<?xml version="1.0" encoding="utf-8"?><c:calendar-query xmlns:d="DAV:" xmlns:c="%s" xmlns:cs="%s">'
+         '<d:prop><d:getetag/><c:calendar-data/><cs:created-by/></d:prop><c:filter><c:comp-filter name="VCALENDAR">'
          '<c:comp-filter name="VEVENT"><c:time-range start="%%s" end="%%s"/></c:comp-filter></c:comp-filter>'
-         "</c:filter></c:calendar-query>" % NS["c"])
+         "</c:filter></c:calendar-query>" % (NS["c"], NS["cs"]))
 
 
 def account_key(apple_id):
@@ -60,9 +60,22 @@ def calendar_entry(href, props):
                                          for p in ("write", "write-content", "all"))
     color = props.get(tag("a:calendar-color"))
     name = props.get(tag("d:displayname"))
+    # A collection someone else shares carries CS:shared; a read-only one in the user's home is shared as well.
+    shared = kind.find("cs:shared", NS) is not None or not writable
     return {"id": href, "name": (name.text if name is not None and name.text else href.rstrip("/").rsplit("/", 1)[-1]),
             "color": (color.text or "#888888")[:7] if color is not None else "#888888",
-            "writable": int(writable), "main": 0}
+            "writable": int(writable), "main": 0, "shared": int(shared)}
+
+
+def created_by(element):
+    """Google's `creator` shape from CalendarServer's created-by property, or None when the server does not say."""
+    if element is None:
+        return None
+    name = " ".join(part for part in (element.findtext("cs:first-name", "", NS).strip(),
+                                      element.findtext("cs:last-name", "", NS).strip()) if part)
+    address = element.findtext("d:href", "", NS).strip()
+    email = address[len("mailto:"):] if address.lower().startswith("mailto:") else ""
+    return {"displayName": name, "email": email} if name or email else None
 
 
 def utc(stamp):
@@ -105,9 +118,12 @@ class ICloudAccount:
             if data is None or not data.text:
                 continue
             try:
-                items += expand(ical.events(data.text), href, span)
+                found = expand(ical.events(data.text), href, span)
             except (ValueError, KeyError):
                 items.append({"id": href})
+                continue
+            creator = created_by(props.get(tag("cs:created-by")))
+            items += [dict(item, creator=creator) if creator else item for item in found]
         return items
 
     def insert(self, calendar, body):

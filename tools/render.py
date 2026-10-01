@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Renders the window offscreen with sample events: no real accounts, keyring, network or visible window.
 
-  python3 tools/render.py OUT.png [week|month] [dark|light] [WIDTHxHEIGHT] [editor|settings|icloud]
+  python3 tools/render.py OUT.png [week|month] [dark|light] [WIDTHxHEIGHT] [editor|settings|icloud|setup|arrival]
 
 Everything the app would write goes to a fresh temporary directory. Evidence for layout only, not for motion.
 """
@@ -62,6 +62,16 @@ def sample(db):
                              "end": {"date": (first + timedelta(days=length)).isoformat()}})
 
 
+def arrivals():
+    """What the banners show when someone adds to a shared calendar: one event and one summary."""
+    start = datetime.now().replace(hour=19, minute=30, second=0, microsecond=0) + timedelta(days=2)
+    shared = {"calendar": "Geteilt von Alex", "color": "#ff9ec7", "allDay": False}
+    return [dict(shared, title="4 neue Termine", start=cache.ms(start + timedelta(days=5)),
+                 end=cache.ms(start + timedelta(days=5, hours=1)), who="Alex", count=4),
+            dict(shared, title="Konzert im Park", start=cache.ms(start), end=cache.ms(start + timedelta(hours=2)),
+                 who="Alex A.", count=1)]
+
+
 def arguments():
     args = sys.argv[1:]
     size = next((a for a in args if "x" in a and a.split("x")[0].isdigit()), "1240x800")
@@ -69,7 +79,7 @@ def arguments():
             "view": "month" if "month" in args else "week",
             "theme": "light" if "light" in args else "dark",
             "size": [int(v) for v in size.split("x")],
-            "sheet": next((a for a in args if a in ("editor", "settings", "icloud")), "")}
+            "sheet": next((a for a in args if a in ("editor", "settings", "icloud", "setup", "arrival")), "")}
 
 
 def main():
@@ -85,10 +95,11 @@ def main():
     client.write_text('{"client_id": "render.apps.googleusercontent.com", "client_secret": "render"}')
     # No client while the bridge starts, so it never asks the real keyring; afterwards the sheet may show it as set up.
     calendar = Calendar(preferences, db, files={"island": str(TMP / "upcoming.json"), "client": str(TMP / "none.json")})
-    calendar.signin.client_file = client
+    # "setup" shows the settings of an installation that has no Google client yet.
+    calendar.signin.client_file = TMP / "none.json" if options["sheet"] == "setup" else client
     engine = build_engine(preferences, calendar)
     window = shiboken6.wrapInstance(shiboken6.getCppPointer(engine.rootObjects()[0])[0], QQuickWindow)
-    if options["sheet"] in ("settings", "icloud"):
+    if options["sheet"] in ("settings", "icloud", "setup"):
         window.setProperty("settingsOpen", True)
         sheet = next(o for o in window.contentItem().childItems() if o.metaObject().className().startswith("SettingsSheet"))
         sheet.setProperty("addingICloud", options["sheet"] == "icloud")
@@ -98,6 +109,9 @@ def main():
         editor = next(o for o in window.contentItem().childItems() if o.metaObject().className().startswith("EventEditor"))
         editor.setProperty("ev", ev)
     calendar.accountsChanged.emit()
+    if options["sheet"] == "arrival":
+        for banner in arrivals():
+            calendar.arrived.emit(banner)
     deadline = time.monotonic() + 1.5
     while time.monotonic() < deadline:
         app.processEvents()

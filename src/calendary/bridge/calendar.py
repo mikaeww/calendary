@@ -8,6 +8,7 @@ import time
 from PySide6.QtCore import Property, QObject, QTimer, Signal, Slot
 
 from calendary import cache, layout
+from calendary.bridge.arrivals import Arrivals
 from calendary.bridge.edits import Edits
 from calendary.bridge.island import ISLAND_FILE, write_island
 from calendary.bridge.signin import SignIn, display
@@ -26,6 +27,7 @@ class Calendar(QObject):
     busyChanged = Signal()
     signingChanged = Signal()
     notice = Signal(str, bool)
+    arrived = Signal("QVariantMap")
 
     def __init__(self, preferences, db=None, keyring=None, files=None):
         """keyring: one keyring for both providers (tests); files: {"island": path, "client": path}."""
@@ -39,6 +41,7 @@ class Calendar(QObject):
         self.worker = Worker()
         self.worker.busyChanged.connect(self.busyChanged)
         self.worker.failed.connect(lambda message: self.say(message, True))
+        self.arrivals = Arrivals()
         self.sync = Sync(self)
         self.edits = Edits(self)
         keyrings = {"google": keyring, "icloud": keyring} if keyring else {"google": Keyring(),

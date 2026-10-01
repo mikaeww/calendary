@@ -1,4 +1,4 @@
-"""docs/verification/caldav.md claims 4-6: discovery, edits and sign-in against a fake CalDAV server over real HTTPS.
+"""caldav.md claims 4-6 and arrivals.md claims 1 and 6: discovery, edits, sign-in against a fake CalDAV server.
 
 The server answers like iCloud and records every request. It uses a throw-away certificate for localhost that only
 this test trusts, so the production rule "HTTPS on the account's domain only" stays in force.
@@ -11,24 +11,29 @@ import subprocess
 import tempfile
 import threading
 import unittest
+import xml.etree.ElementTree as ET
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from calendary.caldav import ICloudAccount, account_key
 from calendary.caldav import ical
+from calendary.caldav.account import calendar_entry
+from calendary.caldav.dav import NS, tag
 from calendary.errors import ServiceError
 
 USER, PASSWORD = "alex@icloud.com", "abcd-efgh-ijkl-mnop"
 SERIES = ("BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nUID:s\r\nDTSTART;TZID=Europe/Berlin:20261005T100000\r\n"
           "DURATION:PT1H\r\nSUMMARY:Serie\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n")
 SINGLE = ("BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nUID:e\r\nDTSTART:20261007T100000Z\r\nDTEND:20261007T110000Z\r\n"
-          "SUMMARY:Termin von Alex\r\nBEGIN:VALARM\r\nTRIGGER:-PT10M\r\nACTION:DISPLAY\r\nEND:VALARM\r\nEND:VEVENT\r\n"
+          "CREATED:20261001T080000Z\r\nSUMMARY:Termin von Alex\r\nBEGIN:VALARM\r\nTRIGGER:-PT10M\r\nACTION:DISPLAY\r\nEND:VALARM\r\nEND:VEVENT\r\n"
           "END:VCALENDAR\r\n")
+CREATOR = ("<cs:created-by><cs:first-name>Alex</cs:first-name><cs:last-name>A.</cs:last-name>"
+           "<d:href>mailto:alex@example.com</d:href></cs:created-by>")
 
 
 def multistatus(*responses):
     return ('<?xml version="1.0"?><d:multistatus xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav" '
-            'xmlns:a="http://apple.com/ns/ical/">%s</d:multistatus>' % "".join(
+            'xmlns:a="http://apple.com/ns/ical/" xmlns:cs="http://calendarserver.org/ns/">%s</d:multistatus>' % "".join(
                 "<d:response><d:href>%s</d:href><d:propstat><d:prop>%s</d:prop><d:status>HTTP/1.1 200 OK</d:status>"
                 "</d:propstat></d:response>" % response for response in responses))
 
@@ -77,8 +82,8 @@ class Server(BaseHTTPRequestHandler):
                 collection("/42/calendars/tasks/", "Erinnerungen", "#888888FF", "write", "VTODO")))
         if self.command == "REPORT":
             found = [(path, text) for path, (text, _) in state["store"].items() if path.startswith(self.path)]
-            return self.reply(207, multistatus(*[(path, "<c:calendar-data>%s</c:calendar-data>" % text.replace("&", "&amp;"))
-                                                 for path, text in found]))
+            return self.reply(207, multistatus(*[(path, "<c:calendar-data>%s</c:calendar-data>%s" % (
+                text.replace("&", "&amp;"), state.get("creators", {}).get(path, ""))) for path, text in found]))
         return self.resource(state, body)
 
     def resource(self, state, body):
@@ -134,7 +139,8 @@ class ICloudTest(unittest.TestCase):
 
     def setUp(self):
         self.server.state = {"base": self.base, "requests": [], "store": {
-            "/42/calendars/home/s.ics": (SERIES, '"s1"'), "/42/calendars/alex/e.ics": (SINGLE, '"e1"')}}
+            "/42/calendars/home/s.ics": (SERIES, '"s1"'), "/42/calendars/alex/e.ics": (SINGLE, '"e1"')},
+            "creators": {"/42/calendars/alex/e.ics": CREATOR}}
         self.account = ICloudAccount(USER, PASSWORD, root=self.base + "/", domain="localhost")
 
     def requests(self, method):
@@ -146,6 +152,17 @@ class ICloudTest(unittest.TestCase):
                          [("Privat", "#7EC8FF", 1), ("Alex teilt", "#FF9EC7", 0)])
         self.assertEqual(calendars[1]["id"], self.base + "/42/calendars/alex/")
         self.assertEqual(self.account.email, account_key(USER))
+
+    def test_shared_calendars_and_who_created_an_event(self):
+        self.assertEqual([c["shared"] for c in self.account.calendars()], [0, 1])
+        items = self.account.events(self.base + "/42/calendars/alex/", ("2026-10-01T00:00:00+02:00",
+                                                                        "2026-11-01T00:00:00+01:00"))
+        self.assertEqual([(i["creator"], i["created"]) for i in items],
+                         [({"displayName": "Alex A.", "email": "alex@example.com"}, "2026-10-01T08:00:00+00:00")])
+        self.assertIn("<cs:created-by/>", self.requests("REPORT")[-1][3])
+        resourcetype = ET.fromstring('<d:resourcetype xmlns:d="DAV:" xmlns:c="%s" xmlns:cs="%s"><d:collection/>'
+                                     "<c:calendar/><cs:shared/></d:resourcetype>" % (NS["c"], NS["cs"]))
+        self.assertEqual(calendar_entry("https://x/", {tag("d:resourcetype"): resourcetype})["shared"], 1)
 
     def test_events_expand_series_and_keep_single_ones(self):
         home = self.base + "/42/calendars/home/"

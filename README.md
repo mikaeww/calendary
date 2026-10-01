@@ -9,6 +9,8 @@ A calendar for Google accounts and iCloud calendars on Linux, made for Hyprland,
 - Week and month view; draw an event into the week, drag it to another time or day, drag its edge to resize
 - Create, edit and delete events, with repeat for new ones; edits show at once and roll back if Google refuses
 - Grey interface in dark and light, following the system; the UI font comes from the Ghostly QShell
+- When someone adds an event to a calendar shared with you, a small banner says what, when and from whom; your own
+  events never show up there
 - The next events go to `~/.cache/calendary/upcoming.json` for the shell's island
 
 The interface is German. Status: Google works against the real service; iCloud is verified against a fake CalDAV

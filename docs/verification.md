@@ -17,3 +17,4 @@
 | [verification/dates.md](verification/dates.md) | Date arithmetic and parsing in `qml/calendar/dates.js` |
 | [verification/google.md](verification/google.md) | Sign-in, token refresh, API calls, bridge behaviour |
 | [verification/caldav.md](verification/caldav.md) | iCalendar reading and writing, recurrence, CalDAV discovery and edits |
+| [verification/arrivals.md](verification/arrivals.md) | Which new events in shared calendars become banners |

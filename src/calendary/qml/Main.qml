@@ -9,6 +9,7 @@ import "controls"
 import "calendar"
 import "sidebar"
 import "sheets"
+import "arrivals"
 import "calendar/dates.js" as Dates
 
 // The window: sidebar left, toolbar and the week or month right, sheets on top.
@@ -341,6 +342,14 @@ Window {
                 }
             }
         }
+    }
+
+    Arrivals {
+        x: win.width - width - Theme.space4
+        y: Theme.space4 + Theme.ctlH + Theme.space2 + Theme.space3
+        // Above the views, below the sheets.
+        z: 5
+        onOpenDay: day => win.jump(day)
     }
 
     Toast {

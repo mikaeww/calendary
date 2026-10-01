@@ -1,12 +1,15 @@
-"""Keeps the cache in step with Google: calendar lists and the padded window on screen (ADR 0002).
+"""Keeps the cache in step with Google and iCloud: calendar lists and the padded window on screen (ADR 0002).
 
-Not for edits (edits.py) or sign-in (signin.py).
+Every fetched calendar is handed to the arrivals, which decide what to announce. Not for edits (edits.py) or
+sign-in (signin.py).
 """
 import time
 
 from calendary import cache
+from calendary.bridge.signin import display
 
-STALE_SECONDS = 300
+# Also the polling period: short enough that events others add show up while the app is open.
+STALE_SECONDS = 60
 PAD_MS = 31 * 86400000
 
 
@@ -34,6 +37,7 @@ class Sync:
             if email not in self.calendar.remote:
                 return
             cache.store_calendars(self.calendar.db, email, items)
+            self.calendar.arrivals.calendars(email, items)
             self.calendar.accounts_changed()
             if self.window:
                 self.fetch(self.window[0] - PAD_MS, self.window[1] + PAD_MS, [email])
@@ -45,10 +49,15 @@ class Sync:
         span = (cache.local(start).isoformat(), cache.local(end).isoformat())
         for email in emails or list(self.calendar.remote):
             for row in cache.calendars(self.calendar.db, email):
-                self.fetch_calendar(self.calendar.remote[email], row["id"], ((start, end), span), entry)
+                self.fetch_calendar(self.calendar.remote[email], row, ((start, end), span), entry)
 
-    def fetch_calendar(self, account, calendar_id, windows, entry):
-        """windows = ((start_ms, end_ms), (start_rfc3339, end_rfc3339)); a failed fetch is not counted as fresh."""
+    def fetch_calendar(self, account, calendar, windows, entry):
+        """calendar = its cache row; windows = ((start_ms, end_ms), (start_rfc3339, end_rfc3339)).
+
+        A failed fetch is not counted as fresh.
+        """
+        calendar_id = calendar["id"]
+
         def job():
             rows, skipped = [], 0
             for item in account.events(calendar_id, windows[1]):
@@ -67,6 +76,10 @@ class Sync:
                 return
             cache.replace_window(self.calendar.db, (account.email, calendar_id), windows[0], rows)
             self.calendar.bump()
+            own = {display(key).lower() for key in self.calendar.remote}
+            for banner in self.calendar.arrivals.check(account.email, (calendar_id, calendar["name"], calendar["color"]),
+                                                        rows, own):
+                self.calendar.arrived.emit(banner)
             if skipped:
                 self.calendar.say("%d Termine konnten nicht gelesen werden und fehlen" % skipped, True)
 

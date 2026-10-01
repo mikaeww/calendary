@@ -37,6 +37,13 @@ def item(component, times, ident, series=None):
               "end": google_time(times[1])}
     if series:
         result["recurringEventId"] = series
+    params, created = prop(component, "CREATED")
+    try:
+        if created:
+            result["created"] = moment(params, created).isoformat()
+    except ValueError:
+        # Only the arrival banner reads it; an event with a broken CREATED stays readable, it is just never announced.
+        pass
     return result
 
 

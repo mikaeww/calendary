@@ -19,6 +19,13 @@ Goal: sign in with Google, see week and month, create, move, resize, edit and de
 | CalDAV discovery, events, edits of single events, sign-in with app password | done, verified against a fake server |
 | Sign-in against real iCloud | open |
 
+## Phase 1c: public repository (2026-10-01)
+
+| Item | State |
+|---|---|
+| Own OAuth client per installation, picked in the settings (ADR 0007) | done, tested offline |
+| Banners for events others add to shared calendars, sync every minute | done, tested offline and rendered; real Google and iCloud open, see `verification/arrivals.md` |
+
 ## Phase 2: comfort
 
 - Multi-day events as spanning bars in the month view.

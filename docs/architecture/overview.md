@@ -16,7 +16,7 @@ QML (src/calendary/qml)                     Python (src/calendary)
 | keyring | `keyring.py`, `errors.py` | Secrets per provider in the Secret Service (Credential Manager on Windows); the shared error type | Anything provider-specific |
 | cache | `cache/` | Google resources to rows and back; SQLite windows | Network, layout |
 | layout | `layout/` | Where events sit in a week (columns, lanes) and in month cells | Drawing, time zones beyond local |
-| bridge | `bridge/` | The QML-facing calendar: threads, optimistic edits, periodic sync, island file | Business rules of Google |
+| bridge | `bridge/` | The QML-facing calendar: threads, optimistic edits, sync every minute, island file, arrivals (new events others put into shared calendars) | Business rules of Google |
 | preferences | `preferences.py`, `desktop.py` | Saved view settings; font and reduced motion from the shell | Colours (those are QML tokens) |
 | platform | `platform/` | The Hyprland suspend workaround (`nosuspend.c`, preload); Windows Credential Manager and taskbar id (`windows.py`) | Anything portable |
 | qml | `qml/` | Everything visible; tokens in `theme/`, motion maths in `motion/` | Network or database access |
@@ -29,6 +29,8 @@ QML (src/calendary/qml)                     Python (src/calendary)
 3. `Calendar.save(fields)` writes the row at once with a pending id, sends it to Google, then swaps in Google's
    answer; a refusal shows a notice and refetches, which rolls the row back.
 4. After every change the next seven days go to the island file, written atomically.
+5. Every fetched calendar passes `bridge/arrivals.py`; events others created after the start in a calendar shared
+   with the user come out as `Calendar.arrived(banner)`, which `qml/arrivals/Arrivals.qml` shows at the top right.
 
 ## Files on disk
 

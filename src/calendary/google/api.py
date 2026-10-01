@@ -22,7 +22,8 @@ def path(*parts):
 def calendar_entry(item):
     return {"id": item["id"], "name": item.get("summaryOverride") or item.get("summary") or item["id"],
             "color": item.get("backgroundColor", "#888888"),
-            "writable": int(item.get("accessRole") in ("owner", "writer")), "main": int(bool(item.get("primary")))}
+            "writable": int(item.get("accessRole") in ("owner", "writer")), "main": int(bool(item.get("primary"))),
+            "shared": int(item.get("accessRole") != "owner")}
 
 
 class Account:

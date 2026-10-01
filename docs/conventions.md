@@ -6,7 +6,7 @@ Binding rules for Calendary, derived from the `clean-project` skill. Deviations 
 
 - `src/calendary/` holds the Python package: one concept per module, one directory per concept with several files.
 - `src/calendary/qml/` holds the interface. `Main.qml` is the window; everything else lives in a named directory
-  (`theme`, `motion`, `controls`, `calendar`, `sidebar`, `sheets`).
+  (`theme`, `motion`, `controls`, `calendar`, `sidebar`, `sheets`, `arrivals`).
 - `tests/` checks the public operations of the package and the pure QML logic (`*.test.js`).
 - `tools/` holds dev commands: `check.py`, `structure.py`, `qmltypes.py` (describes the Python singletons to
   qmllint), `render.py` (offscreen screenshots with sample data), `build_windows.py` and `windows_smoke.py`
