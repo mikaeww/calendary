@@ -1,5 +1,6 @@
 """docs/verification/google.md claims 4-5: the bridge against a fake Google and a fake keyring, no network."""
 import json
+import sys
 import tempfile
 import time
 import unittest
@@ -7,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from unittest import mock
 
+from PySide6.QtCore import QUrl
 from PySide6.QtGui import QGuiApplication
 
 from calendary import cache
@@ -160,6 +162,21 @@ class BridgeTest(unittest.TestCase):
         self.calendar.signIn()
         self.assertTrue(self.notices[-1].startswith("Google-Anmeldung ist nicht eingerichtet"))
         self.assertFalse(self.calendar.signingIn)
+
+    def test_picked_client_file_is_checked_and_copied(self):
+        target = self.calendar.signin.client_file = Path(self.tmp.name, "config", "google-client.json")
+        web = Path(self.tmp.name, "web.json")
+        web.write_text(json.dumps({"web": {"client_id": "x", "client_secret": "y"}}))
+        self.calendar.importClient(QUrl.fromLocalFile(str(web)).toString())
+        self.assertFalse(target.exists())
+        self.assertFalse(self.calendar.ready)
+        desktop = Path(self.tmp.name, "client_secret_123.json")
+        desktop.write_text(json.dumps({"installed": {"client_id": "x", "client_secret": "y"}}))
+        self.calendar.importClient(QUrl.fromLocalFile(str(desktop)).toString())
+        self.assertTrue(self.calendar.ready)
+        if sys.platform != "win32":
+            self.assertEqual(target.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(self.notices[-1], "Google-Anmeldung ist eingerichtet")
 
     def test_icloud_is_stored_only_after_it_worked(self):
         class FakeICloud(FakeGoogle):

@@ -1,6 +1,6 @@
 # 0006: Windows build with embedded Python and NSIS
 
-**Status:** accepted
+**Status:** accepted; shipping the OAuth client in the installer is superseded by 0007
 **Date:** 2026-09-30
 
 ## Context

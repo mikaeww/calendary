@@ -19,7 +19,7 @@ for size in 64 128 256 512; do
 done
 update-desktop-database ~/.local/share/applications 2>/dev/null || true
 gtk-update-icon-cache -q -t "$icons" 2>/dev/null || true
-if [ ! -f "$here/google-client.json" ]; then
-    echo "Hinweis: google-client.json fehlt noch, die Anmeldung geht erst danach (siehe README)."
+if [ ! -f "${XDG_CONFIG_HOME:-$HOME/.config}/calendary/google-client.json" ]; then
+    echo "Hinweis: Für Google fehlt noch der eigene OAuth-Client, siehe README (Google setup)."
 fi
 echo "calendary installiert"

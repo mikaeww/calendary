@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Dialogs
 import Calendary
 import "../theme"
 import "../controls"
@@ -144,14 +145,41 @@ Sheet {
         }
     }
 
-    Text {
+    Column {
         visible: !Calendar.ready
         width: parent.width
-        wrapMode: Text.Wrap
-        text: "Die Google-Anmeldung ist in dieser Installation nicht eingerichtet: google-client.json fehlt im App-Ordner. Die README beschreibt den einmaligen Schritt."
-        color: Theme.sub
-        font.family: Theme.fontUi
-        font.pixelSize: Theme.fsSmall
+        spacing: Theme.space2
+
+        Text {
+            width: parent.width
+            wrapMode: Text.Wrap
+            text: "Für Google braucht jede Installation einen eigenen OAuth-Client: in der Google Cloud Console ein Projekt anlegen, die Calendar API aktivieren, einen Client vom Typ Desktop-App erstellen und dessen JSON-Datei hier wählen."
+            color: Theme.sub
+            font.family: Theme.fontUi
+            font.pixelSize: Theme.fsSmall
+        }
+
+        Row {
+            spacing: Theme.space2
+
+            Button {
+                label: "Client-Datei wählen …"
+                onClicked: clientPicker.open()
+            }
+
+            Button {
+                label: "Anleitung"
+                onClicked: Qt.openUrlExternally("https://github.com/mikaeww/calendary#google-setup")
+            }
+        }
+    }
+
+    FileDialog {
+        id: clientPicker
+
+        title: "Google-Client-Datei wählen"
+        nameFilters: ["Google-Client (*.json)"]
+        onAccepted: Calendar.importClient(selectedFile.toString())
     }
 
     Column {

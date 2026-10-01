@@ -7,7 +7,8 @@ Components: `src/calendary/google/`, `src/calendary/bridge/`.
 2. The loopback server accepts exactly one redirect carrying the expected `state`, rejects others, and hands the
    code to the token exchange together with the verifier and the redirect URI.
 3. A client file is accepted in Google's download format and in the plain `{client_id, client_secret}` form, and
-   anything else is reported as missing.
+   anything else is reported as missing. A picked file is copied into the config folder only when it is accepted;
+   a web client or broken JSON leaves the target untouched (ADR 0007).
 4. The bridge shows an edit before Google answers, replaces the pending id with Google's id, and rolls a refused
    edit back by refetching.
 5. Tests never touch the real keyring or network.

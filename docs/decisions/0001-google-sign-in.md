@@ -1,6 +1,6 @@
 # 0001: Google sign-in with an app-owned OAuth client
 
-**Status:** accepted
+**Status:** accepted; where the client file lives is superseded by 0007
 **Date:** 2026-09-30
 
 ## Context

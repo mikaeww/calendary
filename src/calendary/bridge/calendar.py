@@ -125,6 +125,10 @@ class Calendar(QObject):
     def signIn(self):
         self.signin.start()
 
+    @Slot(str)
+    def importClient(self, url):
+        self.signin.import_client(url)
+
     @Slot()
     def cancelSignIn(self):
         self.signin.cancel()

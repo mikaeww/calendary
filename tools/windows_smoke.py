@@ -17,7 +17,6 @@ from PySide6.QtQuick import QQuickWindow
 
 from calendary import desktop
 from calendary.app import build_engine
-from calendary.google.client import CLIENT_FILE
 from calendary.keyring import Keyring
 
 
@@ -31,7 +30,6 @@ def credential_round_trip():
 
 def main():
     checks = {"keyring is the Credential Manager": Keyring.__name__ == "CredentialManager",
-              "OAuth client installed": CLIENT_FILE.exists(),
               "time zones": zoneinfo.ZoneInfo("Europe/Berlin").key == "Europe/Berlin",
               "ssl and sqlite": bool(ssl.OPENSSL_VERSION and sqlite3.sqlite_version),
               "credential round trip": credential_round_trip()}

@@ -34,7 +34,7 @@ QML (src/calendary/qml)                     Python (src/calendary)
 
 | Path | Content |
 |---|---|
-| `<repo>/google-client.json` | The app's OAuth client (git-ignored, ADR 0001) |
+| `$XDG_CONFIG_HOME/calendary/google-client.json` | The user's own OAuth client, picked in the settings (ADR 0007) |
 | `$XDG_CONFIG_HOME/calendary/calendary.ini` | Preferences as JSON values |
 | `$XDG_DATA_HOME/calendary/calendary.db` | The cache and the list of accounts |
 | `$XDG_CACHE_HOME/calendary/upcoming.json` | Island export |

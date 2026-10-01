@@ -9,9 +9,9 @@ from PySide6.QtGui import QDesktopServices
 
 from calendary import cache
 from calendary.caldav import ICloudAccount, apple_id_of, is_icloud
-from calendary.google import Account, Login, load_client
+from calendary.google import Account, Login, import_client, load_client
 
-MISSING_CLIENT = "Google-Anmeldung ist nicht eingerichtet: google-client.json fehlt im App-Ordner (siehe README)"
+MISSING_CLIENT = "Google-Anmeldung ist nicht eingerichtet: zuerst in den Einstellungen die Client-Datei wählen"
 APP_PASSWORD = re.compile(r"[a-z]{4}-?[a-z]{4}-?[a-z]{4}-?[a-z]{4}")
 
 
@@ -64,6 +64,19 @@ class SignIn:
             self.keyrings["google"].store(email, token)
             return Account(client, email, token)
         self.calendar.worker.run(job, self.added, self.finished)
+
+    def import_client(self, url):
+        """Takes the client file the user picked (a file URL) as this installation's Google client."""
+        try:
+            usable = import_client(QUrl(url).toLocalFile(), self.client_file)
+        except OSError as error:
+            self.calendar.say("Client-Datei nicht übernommen: %s" % (error.strerror or error), True)
+            return
+        if not usable:
+            self.calendar.say("Das ist keine Client-Datei vom Typ Desktop-App aus der Google Cloud Console", True)
+            return
+        self.calendar.accounts_changed()
+        self.calendar.say("Google-Anmeldung ist eingerichtet", False)
 
     def connect_icloud(self, apple_id, password):
         """Checks the input, signs in once, and only then stores the password; False when the input is unusable."""

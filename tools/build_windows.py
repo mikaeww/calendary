@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Builds the Windows installer: embeddable Python, the wheels, src/, assets/ and the OAuth client, packed by NSIS.
+"""Builds the Windows installer: embeddable Python, the wheels, src/ and assets/, packed by NSIS.
 
 Runs on Windows with the Python version it bundles and `makensis` on PATH; the release workflow sets up both. The
-checkout layout is kept (python/, src/, assets/, google-client.json side by side), so every path the package
-derives from `__file__` holds unchanged. Not for Linux, which runs from the checkout (install.sh).
+checkout layout is kept (python/, src/, assets/ side by side), so every path the package derives from `__file__`
+holds unchanged. No OAuth client ships (ADR 0007). Not for Linux, which runs from the checkout (install.sh).
 
   python tools/build_windows.py VERSION     writes dist/Calendary-VERSION-x64-setup.exe
 """
@@ -37,16 +37,12 @@ def embed_python(target):
 
 
 def stage():
-    client = ROOT / "google-client.json"
-    if not client.exists():
-        raise SystemExit("build: google-client.json is missing, the installed app could not sign in to Google")
     shutil.rmtree(STAGE, ignore_errors=True)
     STAGE.mkdir(parents=True)
     embed_python(STAGE / "python")
     shutil.copytree(ROOT / "src/calendary", STAGE / "src/calendary", ignore=IGNORE)
     shutil.copytree(ROOT / "assets", STAGE / "assets")
-    for name in ("google-client.json", "LICENSE"):
-        shutil.copy2(ROOT / name, STAGE / name)
+    shutil.copy2(ROOT / "LICENSE", STAGE / "LICENSE")
 
 
 def main():
