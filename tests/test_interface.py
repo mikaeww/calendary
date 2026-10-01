@@ -95,6 +95,10 @@ class InterfaceTest(unittest.TestCase):
 
     def test_1_move_resize_draw_and_edit(self):
         week = self.items("WeekView")[0]
+        # The view scrolls to the current time; pin it to the event's evening so the drags do not depend on the clock.
+        week.setProperty("now", cache.ms(self.monday + timedelta(days=3, hours=19)))
+        QMetaObject.invokeMethod(week, "scrollToMorning")
+        self.spin(0.2)
         column, hour = week.property("column"), week.property("hourHeight")
         kino = self.block("Kino")
         grab = kino.mapToScene(QPointF(kino.width() / 2, 12))
