@@ -7,6 +7,7 @@ import time
 
 from calendary import cache
 from calendary.bridge.signin import display
+from calendary.language import tr
 
 # Also the polling period: short enough that events others add show up while the app is open.
 STALE_SECONDS = 60
@@ -81,7 +82,7 @@ class Sync:
                                                         rows, own):
                 self.calendar.arrived.emit(banner)
             if skipped:
-                self.calendar.say("%d Termine konnten nicht gelesen werden und fehlen" % skipped, True)
+                self.calendar.say(tr("%d Termine konnten nicht gelesen werden und fehlen") % skipped, True)
 
         def forget():
             if entry in self.fetched:

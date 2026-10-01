@@ -13,13 +13,14 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import requests
 
 from calendary.google.errors import GoogleError
+from calendary.language import tr
 
 AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 SCOPE = "openid email https://www.googleapis.com/auth/calendar"
 TIMEOUT = 20
 DONE_PAGE = ("<!doctype html><meta charset=utf-8><title>Calendary</title>"
-             "<p style='font:16px system-ui;margin:3em'>Angemeldet. Du kannst diesen Tab schließen.</p>")
+             "<p style='font:16px system-ui;margin:3em'>%s</p>")
 
 
 def pkce(verifier=None):
@@ -35,7 +36,7 @@ def id_token_email(id_token):
         payload = id_token.split(".")[1]
         return json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))["email"]
     except (IndexError, ValueError, KeyError) as error:
-        raise GoogleError("Google hat keine E-Mail-Adresse geschickt") from error
+        raise GoogleError(tr("Google hat keine E-Mail-Adresse geschickt")) from error
 
 
 def post_token(client, fields):
@@ -43,15 +44,15 @@ def post_token(client, fields):
     try:
         reply = requests.post(TOKEN_URL, data=dict(fields, **client), timeout=TIMEOUT)
     except requests.RequestException as error:
-        raise GoogleError("Keine Verbindung zu Google") from error
+        raise GoogleError(tr("Keine Verbindung zu Google")) from error
     try:
         data = reply.json()
     except ValueError:
         data = {}
     if reply.status_code != 200:
         if data.get("error") == "invalid_grant":
-            raise GoogleError("Die Anmeldung ist abgelaufen, bitte neu anmelden")
-        raise GoogleError("Google lehnt die Anmeldung ab (%s)" % data.get("error", reply.status_code))
+            raise GoogleError(tr("Die Anmeldung ist abgelaufen, bitte neu anmelden"))
+        raise GoogleError(tr("Google lehnt die Anmeldung ab (%s)") % data.get("error", reply.status_code))
     return data
 
 
@@ -84,7 +85,7 @@ class Login:
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(DONE_PAGE.encode())
+                self.wfile.write((DONE_PAGE % tr("Angemeldet. Du kannst diesen Tab schließen.")).encode())
                 login.done.set()
 
             def log_message(self, *args):
@@ -105,12 +106,12 @@ class Login:
             self.server.shutdown()
             self.server.server_close()
         if not finished:
-            raise GoogleError("Anmeldung abgelaufen, bitte erneut versuchen")
+            raise GoogleError(tr("Anmeldung abgelaufen, bitte erneut versuchen"))
         if "code" not in self.result:
-            raise GoogleError("Anmeldung abgebrochen" if self.result.get("error") in ("cancelled", "access_denied")
-                              else "Anmeldung fehlgeschlagen: %s" % self.result.get("error", "?"))
+            raise GoogleError(tr("Anmeldung abgebrochen") if self.result.get("error") in ("cancelled", "access_denied")
+                              else tr("Anmeldung fehlgeschlagen: %s") % self.result.get("error", "?"))
         tokens = self.exchange(self.client, {"grant_type": "authorization_code", "code": self.result["code"],
                                              "redirect_uri": self.redirect, "code_verifier": self.verifier})
         if "refresh_token" not in tokens:
-            raise GoogleError("Google hat keine dauerhafte Anmeldung geschickt")
+            raise GoogleError(tr("Google hat keine dauerhafte Anmeldung geschickt"))
         return id_token_email(tokens.get("id_token", "")), tokens["refresh_token"]

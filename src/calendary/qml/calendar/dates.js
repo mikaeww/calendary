@@ -3,9 +3,15 @@
 // Local calendar arithmetic for the views. Days move through the Date constructor, never in 24-hour steps, so
 // daylight saving changes keep midnight at midnight. Verified in docs/verification/dates.md.
 
-var weekdayShort = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
-var monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober",
-                  "November", "Dezember"];
+// Functions, not arrays: qsTr() runs again on every call, so a language switch reaches the bindings.
+function weekdayShort(index) {
+    return [qsTr("So"), qsTr("Mo"), qsTr("Di"), qsTr("Mi"), qsTr("Do"), qsTr("Fr"), qsTr("Sa")][index];
+}
+
+function monthName(index) {
+    return [qsTr("Januar"), qsTr("Februar"), qsTr("März"), qsTr("April"), qsTr("Mai"), qsTr("Juni"), qsTr("Juli"),
+            qsTr("August"), qsTr("September"), qsTr("Oktober"), qsTr("November"), qsTr("Dezember")][index];
+}
 
 function day(ms) {
     var d = new Date(ms);
@@ -82,5 +88,5 @@ function minutesOf(ms) {
 }
 
 function span(ev) {
-    return ev.allDay ? "ganztägig" : time(ev.start) + " – " + time(ev.end);
+    return ev.allDay ? qsTr("ganztägig") : time(ev.start) + " – " + time(ev.end);
 }

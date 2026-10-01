@@ -67,7 +67,7 @@ Window {
     function create(start, end, allDay) {
         if (!Calendar.accounts.some(account => account.calendars.some(cal => cal.writable))) {
             weekView.ghost = null;
-            toast.show(Calendar.accounts.length ? "Kein beschreibbarer Kalender" : "Zuerst mit Google anmelden", false);
+            toast.show(Calendar.accounts.length ? qsTr("Kein beschreibbarer Kalender") : qsTr("Zuerst mit Google anmelden"), false);
             return;
         }
         editor.ev = {
@@ -88,7 +88,7 @@ Window {
     minimumHeight: 480
     visible: true
     color: Theme.bg
-    title: "Calendary – " + Dates.monthNames[new Date(middle).getMonth()] + " " + new Date(middle).getFullYear()
+    title: "Calendary – " + Dates.monthName(new Date(middle).getMonth()) + " " + new Date(middle).getFullYear()
 
     Component.onCompleted: Calendar.show(rangeStart, rangeEnd)
     onRangeStartChanged: Calendar.show(rangeStart, rangeEnd)
@@ -205,7 +205,7 @@ Window {
 
                 Text {
                     anchors.baseline: year.baseline
-                    text: Dates.monthNames[new Date(win.middle).getMonth()]
+                    text: Dates.monthName(new Date(win.middle).getMonth())
                     color: Theme.fg
                     font.family: Theme.fontUi
                     font.pixelSize: Theme.fsDisplay
@@ -229,7 +229,7 @@ Window {
                 spacing: Theme.space2
 
                 Segmented {
-                    options: [["week", "Woche"], ["month", "Monat"]]
+                    options: [["week", qsTr("Woche")], ["month", qsTr("Monat")]]
                     current: win.view
                     onPicked: value => win.setView(value)
                 }
@@ -239,32 +239,32 @@ Window {
 
                     IconButton {
                         glyph: Theme.glyph.left
-                        label: win.view === "month" ? "Voriger Monat" : "Vorige Woche"
+                        label: win.view === "month" ? qsTr("Voriger Monat") : qsTr("Vorige Woche")
                         onClicked: win.go(-1)
                     }
 
                     Button {
-                        label: "Heute"
+                        label: qsTr("Heute")
                         onClicked: win.today()
                     }
 
                     IconButton {
                         glyph: Theme.glyph.right
-                        label: win.view === "month" ? "Nächster Monat" : "Nächste Woche"
+                        label: win.view === "month" ? qsTr("Nächster Monat") : qsTr("Nächste Woche")
                         onClicked: win.go(1)
                     }
                 }
 
                 IconButton {
                     glyph: Theme.glyph.plus
-                    label: "Neuer Termin"
+                    label: qsTr("Neuer Termin")
                     onClicked: win.createNow()
                 }
 
                 IconButton {
                     visible: win.compact
                     glyph: Theme.glyph.settings
-                    label: "Einstellungen"
+                    label: qsTr("Einstellungen")
                     onClicked: win.settingsOpen = true
                 }
             }

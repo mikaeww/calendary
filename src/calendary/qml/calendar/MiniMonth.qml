@@ -50,7 +50,7 @@ Rectangle {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 x: Theme.space1
-                text: Dates.monthNames[new Date(root.shown).getMonth()] + " " + new Date(root.shown).getFullYear()
+                text: Dates.monthName(new Date(root.shown).getMonth()) + " " + new Date(root.shown).getFullYear()
                 color: Theme.fg
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.fsBody
@@ -62,13 +62,13 @@ Rectangle {
 
                 IconButton {
                     glyph: Theme.glyph.left
-                    label: "Voriger Monat"
+                    label: qsTr("Voriger Monat")
                     onClicked: root.shown = Dates.addMonths(root.shown, -1)
                 }
 
                 IconButton {
                     glyph: Theme.glyph.right
-                    label: "Nächster Monat"
+                    label: qsTr("Nächster Monat")
                     onClicked: root.shown = Dates.addMonths(root.shown, 1)
                 }
             }
@@ -103,7 +103,7 @@ Rectangle {
                         height: Theme.fsMicro * 2
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        text: Dates.weekdayShort[(root.weekStart + index) % 7].charAt(0)
+                        text: Dates.weekdayShort((root.weekStart + index) % 7).charAt(0)
                         color: Theme.faint
                         font.family: Theme.fontUi
                         font.pixelSize: Theme.fsMicro

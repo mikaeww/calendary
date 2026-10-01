@@ -54,7 +54,7 @@ Rectangle {
         Text {
             width: parent.width - 12 - (when.visible ? when.implicitWidth + 6 : 0)
             anchors.verticalCenter: parent.verticalCenter
-            text: chip.ev.title || "(Ohne Titel)"
+            text: chip.ev.title || qsTr("(Ohne Titel)")
             color: chip.past ? Theme.sub : Theme.fg
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsSmall

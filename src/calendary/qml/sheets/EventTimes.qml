@@ -28,11 +28,11 @@ Grid {
         const to = Dates.parseTime(endTime.text);
         if (isNaN(first) || isNaN(last))
             return {
-                error: "Datum als TT.MM.JJJJ eingeben"
+                error: qsTr("Datum als TT.MM.JJJJ eingeben")
             };
         if (!allDay && (isNaN(from) || isNaN(to)))
             return {
-                error: "Uhrzeit als HH:MM eingeben"
+                error: qsTr("Uhrzeit als HH:MM eingeben")
             };
         const start = allDay ? first : Dates.atMinutes(first, from);
         const end = allDay ? Dates.addDays(last, 1) : Dates.atMinutes(last, to);
@@ -40,7 +40,7 @@ Grid {
             start: start,
             end: end
         } : {
-            error: "Das Ende liegt vor dem Beginn"
+            error: qsTr("Das Ende liegt vor dem Beginn")
         };
     }
 
@@ -51,7 +51,7 @@ Grid {
 
     Text {
         width: 56
-        text: "Beginn"
+        text: qsTr("Beginn")
         color: Theme.sub
         font.family: Theme.fontUi
         font.pixelSize: Theme.fsBody
@@ -61,7 +61,7 @@ Grid {
         id: startDate
 
         width: 124
-        placeholder: "TT.MM.JJJJ"
+        placeholder: qsTr("TT.MM.JJJJ")
         input.readOnly: !root.editable
     }
 
@@ -76,7 +76,7 @@ Grid {
 
     Text {
         width: 56
-        text: "Ende"
+        text: qsTr("Ende")
         color: Theme.sub
         font.family: Theme.fontUi
         font.pixelSize: Theme.fsBody
@@ -86,7 +86,7 @@ Grid {
         id: endDate
 
         width: 124
-        placeholder: "TT.MM.JJJJ"
+        placeholder: qsTr("TT.MM.JJJJ")
         input.readOnly: !root.editable
     }
 

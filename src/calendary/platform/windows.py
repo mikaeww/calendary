@@ -7,6 +7,7 @@ import ctypes
 from ctypes import wintypes
 
 from calendary.errors import ServiceError
+from calendary.language import tr
 
 GENERIC = 1
 PERSIST_LOCAL_MACHINE = 2
@@ -33,7 +34,7 @@ for _call in (_advapi.CredWriteW, _advapi.CredReadW, _advapi.CredDeleteW):
 
 
 def _failure(action):
-    return ServiceError("Windows-Anmeldeinformationsverwaltung: %s fehlgeschlagen (Fehler %d)"
+    return ServiceError(tr("Windows-Anmeldeinformationsverwaltung: %s fehlgeschlagen (Fehler %d)")
                         % (action, ctypes.get_last_error()))
 
 
@@ -52,7 +53,7 @@ class CredentialManager:
         credential = _Credential(Type=GENERIC, TargetName=self._target(email), CredentialBlobSize=len(blob),
                                  CredentialBlob=buffer, Persist=PERSIST_LOCAL_MACHINE, UserName=email)
         if not _advapi.CredWriteW(ctypes.byref(credential), 0):
-            raise _failure("Speichern")
+            raise _failure(tr("Speichern"))
 
     def lookup(self, email):
         """The stored secret, or None when there is none for this account."""
@@ -60,7 +61,7 @@ class CredentialManager:
         if not _advapi.CredReadW(self._target(email), GENERIC, 0, ctypes.byref(found)):
             if ctypes.get_last_error() == NOT_FOUND:
                 return None
-            raise _failure("Lesen")
+            raise _failure(tr("Lesen"))
         try:
             return ctypes.string_at(found.contents.CredentialBlob, found.contents.CredentialBlobSize).decode() or None
         finally:
@@ -68,7 +69,7 @@ class CredentialManager:
 
     def clear(self, email):
         if not _advapi.CredDeleteW(self._target(email), GENERIC, 0) and ctypes.get_last_error() != NOT_FOUND:
-            raise _failure("Löschen")
+            raise _failure(tr("Löschen"))
 
 
 def use_own_taskbar_entry():

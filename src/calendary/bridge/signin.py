@@ -10,8 +10,8 @@ from PySide6.QtGui import QDesktopServices
 from calendary import cache
 from calendary.caldav import ICloudAccount, apple_id_of, is_icloud
 from calendary.google import Account, Login, import_client, load_client
+from calendary.language import tr
 
-MISSING_CLIENT = "Google-Anmeldung ist nicht eingerichtet: zuerst in den Einstellungen die Client-Datei wählen"
 APP_PASSWORD = re.compile(r"[a-z]{4}-?[a-z]{4}-?[a-z]{4}-?[a-z]{4}")
 
 
@@ -39,7 +39,7 @@ class SignIn:
         def ready(found):
             for key, secret in found.items():
                 if not secret:
-                    self.calendar.say("%s ist abgemeldet, bitte neu anmelden" % display(key), True)
+                    self.calendar.say(tr("%s ist abgemeldet, bitte neu anmelden") % display(key), True)
                 elif is_icloud(key):
                     self.calendar.remote[key] = ICloudAccount(apple_id_of(key), secret)
                 else:
@@ -50,7 +50,7 @@ class SignIn:
     def start(self):
         client = load_client(self.client_file)
         if not client:
-            self.calendar.say(MISSING_CLIENT, True)
+            self.calendar.say(tr("Google-Anmeldung ist nicht eingerichtet: zuerst in den Einstellungen die Client-Datei wählen"), True)
             return
         if self.login:
             return
@@ -70,19 +70,19 @@ class SignIn:
         try:
             usable = import_client(QUrl(url).toLocalFile(), self.client_file)
         except OSError as error:
-            self.calendar.say("Client-Datei nicht übernommen: %s" % (error.strerror or error), True)
+            self.calendar.say(tr("Client-Datei nicht übernommen: %s") % (error.strerror or error), True)
             return
         if not usable:
-            self.calendar.say("Das ist keine Client-Datei vom Typ Desktop-App aus der Google Cloud Console", True)
+            self.calendar.say(tr("Das ist keine Client-Datei vom Typ Desktop-App aus der Google Cloud Console"), True)
             return
         self.calendar.accounts_changed()
-        self.calendar.say("Google-Anmeldung ist eingerichtet", False)
+        self.calendar.say(tr("Google-Anmeldung ist eingerichtet"), False)
 
     def connect_icloud(self, apple_id, password):
         """Checks the input, signs in once, and only then stores the password; False when the input is unusable."""
         apple_id, typed = apple_id.strip(), password.replace(" ", "").strip().lower()
         if "@" not in apple_id or not APP_PASSWORD.fullmatch(typed):
-            self.calendar.say("Apple-ID und ein app-spezifisches Passwort (xxxx-xxxx-xxxx-xxxx) eingeben", True)
+            self.calendar.say(tr("Apple-ID und ein app-spezifisches Passwort (xxxx-xxxx-xxxx-xxxx) eingeben"), True)
             return False
         # Apple shows these passwords as four dashed groups; keep that form whatever was typed.
         letters = typed.replace("-", "")
@@ -105,7 +105,7 @@ class SignIn:
         cache.add_account(self.calendar.db, account.email)
         self.calendar.remote[account.email] = account
         self.calendar.accounts_changed()
-        self.calendar.say("%s ist verbunden" % display(account.email), False)
+        self.calendar.say(tr("%s ist verbunden") % display(account.email), False)
         self.calendar.sync.refresh(account.email)
 
     def finished(self):

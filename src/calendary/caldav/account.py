@@ -12,11 +12,11 @@ from calendary.caldav import ical
 from calendary.caldav.dav import NS, Dav, tag
 from calendary.caldav.recurrence import expand
 from calendary.errors import ServiceError
+from calendary.language import tr
 
 ROOT = "https://caldav.icloud.com/"
 DOMAIN = "icloud.com"
 PREFIX = "icloud:"
-SERIES = "Serien aus iCloud lassen sich in Calendary noch nicht bearbeiten, bitte am Handy ändern"
 CALENDAR_PROPS = ["d:resourcetype", "d:displayname", "a:calendar-color", "c:supported-calendar-component-set",
                   "d:current-user-privilege-set"]
 QUERY = ('<?xml version="1.0" encoding="utf-8"?><c:calendar-query xmlns:d="DAV:" xmlns:c="%s" xmlns:cs="%s">'
@@ -38,13 +38,17 @@ def apple_id_of(key):
     return key[len(PREFIX):]
 
 
+def series_refused():
+    return ServiceError(tr("Serien aus iCloud lassen sich in Calendary noch nicht bearbeiten, bitte am Handy ändern"))
+
+
 def first_href(results, name):
     for base, props in results:
         element = props.get(tag(name))
         found = element.findtext("d:href", None, NS) if element is not None else None
         if found:
             return urljoin(base, found.strip())
-    raise ServiceError("iCloud hat kein %s geliefert" % name.split(":")[1])
+    raise ServiceError(tr("iCloud hat kein %s geliefert") % name.split(":")[1])
 
 
 def calendar_entry(href, props):
@@ -128,7 +132,7 @@ class ICloudAccount:
 
     def insert(self, calendar, body):
         if body.get("recurrence"):
-            raise ServiceError("Wiederholungen lassen sich in iCloud-Kalendern noch nicht anlegen")
+            raise ServiceError(tr("Wiederholungen lassen sich in iCloud-Kalendern noch nicht anlegen"))
         uid = "%s@calendary" % uuid.uuid4()
         url = calendar.rstrip("/") + "/" + uid + ".ics"
         self.dav.put(url, ical.new_event(uid, body), {"If-None-Match": "*"})
@@ -137,11 +141,11 @@ class ICloudAccount:
     def stored(self, event):
         """(text, etag) of a single event; series and their instances are refused."""
         if "#" in event:
-            raise ServiceError(SERIES)
+            raise series_refused()
         text, etag = self.dav.get(event)
         vevents = ical.events(text)
         if len(vevents) != 1 or any(key in ("RRULE", "RDATE") for key, _, _ in vevents[0]["props"]):
-            raise ServiceError(SERIES)
+            raise series_refused()
         return text, etag
 
     def patch(self, calendar, event, body):

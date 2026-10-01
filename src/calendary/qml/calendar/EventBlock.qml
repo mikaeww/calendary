@@ -58,7 +58,7 @@ Rectangle {
 
             Text {
                 width: parent.width - 12
-                text: block.ev.title || "(Ohne Titel)"
+                text: block.ev.title || qsTr("(Ohne Titel)")
                 color: block.past && !block.dragging ? Theme.sub : Theme.fg
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.fsSmall

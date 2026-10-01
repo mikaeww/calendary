@@ -28,7 +28,8 @@ Item {
 
     function when(banner) {
         const d = new Date(banner.start);
-        const day = (banner.count > 1 ? "ab " : "") + Dates.weekdayShort[d.getDay()] + " " + d.getDate() + "." + (d.getMonth() + 1) + ".";
+        const date = Dates.weekdayShort(d.getDay()) + " " + d.getDate() + "." + (d.getMonth() + 1) + ".";
+        const day = banner.count > 1 ? qsTr("ab %1").arg(date) : date;
         if (banner.count > 1 || banner.allDay)
             return day;
         return day + " · " + Dates.time(banner.start) + "–" + Dates.time(banner.end);
@@ -97,7 +98,7 @@ Item {
             y: place.value
             opacity: enter.value
             Accessible.role: Accessible.AlertMessage
-            Accessible.name: title + ", " + stack.when(banner) + (who ? ", von " + who : "") + ", in " + calendar
+            Accessible.name: title + ", " + stack.when(banner) + (who ? ", " + qsTr("von %1").arg(who) : "") + ", " + qsTr("in %1").arg(calendar)
 
             transform: Translate {
                 // Reduced motion keeps the fade and drops the travel.
@@ -190,7 +191,7 @@ Item {
                 Text {
                     width: parent.width
                     height: body.height
-                    text: banner.title || "Ohne Titel"
+                    text: banner.title || qsTr("Ohne Titel")
                     color: Theme.fg
                     font.family: Theme.fontUi
                     font.pixelSize: Theme.fsBody
@@ -201,7 +202,7 @@ Item {
                 Text {
                     width: parent.width
                     height: small.height
-                    text: stack.when(banner) + (banner.who ? " · von " + banner.who : "")
+                    text: stack.when(banner) + (banner.who ? " · " + qsTr("von %1").arg(banner.who) : "")
                     color: Theme.sub
                     font.family: Theme.fontUi
                     font.pixelSize: Theme.fsSmall

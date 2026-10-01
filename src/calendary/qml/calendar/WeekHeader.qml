@@ -55,7 +55,7 @@ Item {
                         id: label
 
                         anchors.centerIn: parent
-                        text: Dates.weekdayShort[new Date(head.day).getDay()] + " " + new Date(head.day).getDate()
+                        text: Dates.weekdayShort(new Date(head.day).getDay()) + " " + new Date(head.day).getDate()
                         color: head.today ? Theme.chipOnFg : Theme.fg
                         font.family: Theme.fontUi
                         font.pixelSize: Theme.fsBody
@@ -88,7 +88,7 @@ Item {
             height: root.lane
             horizontalAlignment: Text.AlignRight
             verticalAlignment: Text.AlignVCenter
-            text: "ganztägig"
+            text: qsTr("ganztägig")
             color: Theme.faint
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsMicro

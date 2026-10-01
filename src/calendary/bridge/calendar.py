@@ -17,6 +17,7 @@ from calendary.bridge.sync import STALE_SECONDS, Sync
 from calendary.bridge.worker import Worker
 from calendary.google import CLIENT_FILE
 from calendary.keyring import Keyring
+from calendary.language import tr
 
 WEEK_MS = 7 * 86400000
 
@@ -77,7 +78,7 @@ class Calendar(QObject):
         try:
             write_island(self.island, now, cache.between(self.db, now, now + WEEK_MS, self.hidden()))
         except OSError as error:
-            self.say("Island-Datei nicht schreibbar: %s" % error, True)
+            self.say(tr("Island-Datei nicht schreibbar: %s") % error, True)
 
     # --- properties
 

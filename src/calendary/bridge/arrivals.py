@@ -8,6 +8,7 @@ import json
 from datetime import datetime, timezone
 
 from calendary.cache import event_key
+from calendary.language import tr
 
 # More new events than this from one calendar in one sync become one summary banner.
 LIMIT = 3
@@ -68,6 +69,6 @@ class Arrivals:
                     "who": row["who"], "calendar": name, "color": color, "count": 1} for row in fresh]
         if len(banners) > LIMIT:
             names = {banner["who"] for banner in banners}
-            return [dict(banners[0], title="%d neue Termine" % len(banners), count=len(banners),
+            return [dict(banners[0], title=tr("%d neue Termine") % len(banners), count=len(banners),
                          who=names.pop() if len(names) == 1 else "")]
         return banners

@@ -9,6 +9,7 @@ from urllib.parse import urljoin, urlparse
 import requests
 
 from calendary.errors import ServiceError
+from calendary.language import tr
 
 TIMEOUT = 20
 NS = {"d": "DAV:", "c": "urn:ietf:params:xml:ns:caldav", "a": "http://apple.com/ns/ical/",
@@ -28,7 +29,7 @@ class Dav:
         host = parsed.hostname or ""
         # Security: basic auth is sent with every request, so a redirect or href elsewhere must never be followed.
         if parsed.scheme != "https" or not (host == self.domain or host.endswith("." + self.domain)):
-            raise ServiceError("iCloud verweist auf eine fremde Adresse (%s), abgebrochen" % (host or url))
+            raise ServiceError(tr("iCloud verweist auf eine fremde Adresse (%s), abgebrochen") % (host or url))
         return url
 
     def request(self, method, url, body=None, headers=None):
@@ -39,19 +40,19 @@ class Dav:
                 reply = requests.request(method, url, data=body.encode() if isinstance(body, str) else body,
                                          headers=headers or {}, auth=self.auth, timeout=TIMEOUT, allow_redirects=False)
             except requests.RequestException as error:
-                raise ServiceError("Keine Verbindung zu iCloud") from error
+                raise ServiceError(tr("Keine Verbindung zu iCloud")) from error
             if reply.status_code in REDIRECTS and "location" in reply.headers:
                 url = urljoin(url, reply.headers["location"])
                 continue
             if reply.status_code == 401:
-                raise ServiceError("iCloud lehnt die Anmeldung ab: Apple-ID oder app-spezifisches Passwort stimmt nicht")
+                raise ServiceError(tr("iCloud lehnt die Anmeldung ab: Apple-ID oder app-spezifisches Passwort stimmt nicht"))
             if reply.status_code == 412:
-                raise ServiceError("Der Termin wurde inzwischen woanders geändert, bitte neu laden")
+                raise ServiceError(tr("Der Termin wurde inzwischen woanders geändert, bitte neu laden"))
             if reply.status_code >= 400:
-                raise ServiceError("iCloud: HTTP %d bei %s %s" % (reply.status_code, method, url))
+                raise ServiceError(tr("iCloud: HTTP %d bei %s %s") % (reply.status_code, method, url))
             reply.final_url = url
             return reply
-        raise ServiceError("iCloud leitet zu oft weiter")
+        raise ServiceError(tr("iCloud leitet zu oft weiter"))
 
     def multistatus(self, method, url, body, depth):
         """[(absolute href, {"{ns}name": element})] of every response, with the properties that came back 200."""
@@ -59,7 +60,7 @@ class Dav:
         try:
             root = ET.fromstring(reply.content)
         except ET.ParseError as error:
-            raise ServiceError("iCloud hat unlesbares XML geschickt") from error
+            raise ServiceError(tr("iCloud hat unlesbares XML geschickt")) from error
         results = []
         for response in root.findall("d:response", NS):
             href = urljoin(reply.final_url, response.findtext("d:href", "", NS))

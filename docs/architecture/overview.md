@@ -18,6 +18,7 @@ QML (src/calendary/qml)                     Python (src/calendary)
 | layout | `layout/` | Where events sit in a week (columns, lanes) and in month cells | Drawing, time zones beyond local |
 | bridge | `bridge/` | The QML-facing calendar: threads, optimistic edits, sync every minute, island file, arrivals (new events others put into shared calendars) | Business rules of Google |
 | preferences | `preferences.py`, `desktop.py` | Saved view settings; font and reduced motion from the shell | Colours (those are QML tokens) |
+| language | `language.py`, `english.json` | German text from the code shown in German or English: `tr()` in Python, `qsTr()` in QML through one table, switched live via `Qt.uiLanguage` | Date and time formats |
 | platform | `platform/` | The Hyprland suspend workaround (`nosuspend.c`, preload); Windows Credential Manager and taskbar id (`windows.py`) | Anything portable |
 | qml | `qml/` | Everything visible; tokens in `theme/`, motion maths in `motion/` | Network or database access |
 

@@ -39,7 +39,7 @@ Item {
                 height: names.height
                 leftPadding: Theme.space3
                 verticalAlignment: Text.AlignVCenter
-                text: Dates.weekdayShort[(root.weekStart + index) % 7]
+                text: Dates.weekdayShort((root.weekStart + index) % 7)
                 color: Theme.sub
                 font.family: Theme.fontUi
                 font.pixelSize: Theme.fsSmall
@@ -94,7 +94,7 @@ Item {
                     id: dayNumber
 
                     anchors.centerIn: parent
-                    text: new Date(cell.day).getDate() + (new Date(cell.day).getDate() === 1 ? ". " + Dates.monthNames[new Date(cell.day).getMonth()] : "")
+                    text: new Date(cell.day).getDate() + (new Date(cell.day).getDate() === 1 ? ". " + Dates.monthName(new Date(cell.day).getMonth()) : "")
                     color: cell.today ? Theme.chipOnFg : cell.inMonth ? Theme.fg : Theme.faint
                     font.family: Theme.fontUi
                     font.pixelSize: Theme.fsBody
@@ -137,7 +137,7 @@ Item {
                     leftPadding: Theme.space2
                     height: root.line
                     verticalAlignment: Text.AlignVCenter
-                    text: "+" + (cell.events.length - cell.shown) + " weitere"
+                    text: qsTr("+%1 weitere").arg(cell.events.length - cell.shown)
                     color: Theme.sub
                     font.family: Theme.fontUi
                     font.pixelSize: Theme.fsMicro

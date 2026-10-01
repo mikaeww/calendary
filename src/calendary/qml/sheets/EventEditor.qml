@@ -22,7 +22,7 @@ Sheet {
     readonly property var calendars: Calendar.accounts.reduce((all, account) => all.concat(account.calendars.filter(cal => cal.writable || (root.ev && cal.key === root.ev.calendarKey))), [])
     // iCloud does not take new series yet (ADR 0005), so repeat is only offered for Google calendars.
     readonly property bool canRepeat: !existing && (calendars.find(cal => cal.key === calendarKey) || {}).provider === "google"
-    readonly property var repeats: [["", "Einmalig"], ["DAILY", "Täglich"], ["WEEKLY", "Wöchentlich"], ["MONTHLY", "Monatlich"], ["YEARLY", "Jährlich"]]
+    readonly property var repeats: [["", qsTr("Einmalig")], ["DAILY", qsTr("Täglich")], ["WEEKLY", qsTr("Wöchentlich")], ["MONTHLY", qsTr("Monatlich")], ["YEARLY", qsTr("Jährlich")]]
 
     function save() {
         if (!writable) {
@@ -31,7 +31,7 @@ Sheet {
         }
         const span = times.parse(new Date(ev.start).getFullYear());
         if (span.error || !calendarKey) {
-            error = span.error || "Kein beschreibbarer Kalender";
+            error = span.error || qsTr("Kein beschreibbarer Kalender");
             return;
         }
         Calendar.save({
@@ -84,7 +84,7 @@ Sheet {
 
         width: parent.width
         size: Theme.fsHead
-        placeholder: "Titel"
+        placeholder: qsTr("Titel")
         input.readOnly: !root.writable
     }
 
@@ -120,7 +120,7 @@ Sheet {
         spacing: Theme.space1
 
         Chip {
-            label: "Ganztägig"
+            label: qsTr("Ganztägig")
             active: root.allDay
             onClicked: root.allDay = !root.allDay
         }
@@ -141,7 +141,7 @@ Sheet {
     Text {
         visible: root.existing && (root.ev.recurring || !root.writable)
         width: parent.width
-        text: !root.writable ? "Dieser Kalender ist nur lesbar." : "Teil einer Serie. Änderungen gelten nur für diesen Termin."
+        text: !root.writable ? qsTr("Dieser Kalender ist nur lesbar.") : qsTr("Teil einer Serie. Änderungen gelten nur für diesen Termin.")
         color: Theme.sub
         font.family: Theme.fontUi
         font.pixelSize: Theme.fsSmall
@@ -153,7 +153,7 @@ Sheet {
 
         width: parent.width
         glyph: Theme.glyph.place
-        placeholder: "Ort"
+        placeholder: qsTr("Ort")
         input.readOnly: !root.writable
     }
 
@@ -177,11 +177,11 @@ Sheet {
             selectByMouse: true
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsBody
-            Accessible.name: "Notizen"
+            Accessible.name: qsTr("Notizen")
 
             Text {
                 visible: notes.text === ""
-                text: "Notizen"
+                text: qsTr("Notizen")
                 color: Theme.faint
                 font: notes.font
             }
@@ -203,7 +203,7 @@ Sheet {
 
         Button {
             visible: root.existing && root.writable
-            label: root.confirmDelete ? "Wirklich löschen?" : "Löschen"
+            label: root.confirmDelete ? qsTr("Wirklich löschen?") : qsTr("Löschen")
             strong: root.confirmDelete
             onClicked: root.remove()
         }
@@ -213,13 +213,13 @@ Sheet {
             spacing: Theme.space2
 
             Button {
-                label: root.writable ? "Abbrechen" : "Schließen"
+                label: root.writable ? qsTr("Abbrechen") : qsTr("Schließen")
                 onClicked: root.dismissed()
             }
 
             Button {
                 visible: root.writable
-                label: root.existing ? "Sichern" : "Anlegen"
+                label: root.existing ? qsTr("Sichern") : qsTr("Anlegen")
                 primary: true
                 onClicked: root.save()
             }

@@ -5,6 +5,7 @@ Not for fetching (sync.py).
 import secrets
 
 from calendary import cache
+from calendary.language import tr
 
 
 class Edits:
@@ -18,7 +19,7 @@ class Edits:
         remote = self.calendar.remote.get(account)
         previous = self.calendar.remote.get(old[0]) if old else None
         if not remote or (old and not previous):
-            self.calendar.say("%s ist nicht angemeldet" % (account if not remote else old[0]), True)
+            self.calendar.say(tr("%s ist nicht angemeldet") % (account if not remote else old[0]), True)
             return
         body = cache.to_google(fields)
         shown = old[2] if old else "pending-" + secrets.token_hex(6)
@@ -55,7 +56,7 @@ class Edits:
         account, calendar, event = cache.split_key(key)
         remote = self.calendar.remote.get(account)
         if not remote:
-            self.calendar.say("%s ist nicht angemeldet" % account, True)
+            self.calendar.say(tr("%s ist nicht angemeldet") % account, True)
             return
         with self.calendar.db:
             cache.delete_event(self.calendar.db, account, calendar, event)

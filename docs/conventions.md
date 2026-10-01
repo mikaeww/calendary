@@ -52,7 +52,11 @@ Forbidden module names: `utils`, `util`, `helpers`, `helper`, `misc`, `common`, 
   Reduced motion removes travel and keeps fades.
 - Every QML file declares `pragma ComponentBehavior: Bound`; delegates reach model data only through required
   properties.
-- UI text is German, code and docs are English.
+- UI text is written in German, code and docs are English. Every visible text is marked: `qsTr("…")` in QML and
+  JavaScript, `tr("…")` in Python, one literal per call with `%1` or `%s` for values. Its English goes into
+  `src/calendary/english.json`; `tests/test_language.py` fails on a missing or stale entry. The language follows the
+  system (German on a German system, English otherwise) until it is chosen in the settings. Dates stay
+  day.month.year with 24 hours in both languages.
 
 ## Workflow
 

@@ -5,6 +5,7 @@ import traceback
 from PySide6.QtCore import Property, QObject, Signal
 
 from calendary.errors import ServiceError
+from calendary.language import tr
 
 
 class Worker(QObject):
@@ -34,7 +35,7 @@ class Worker(QObject):
                 return
             except Exception as error:  # noqa: BLE001 - a thread boundary: report any bug instead of hanging busy
                 traceback.print_exc()
-                message = "Interner Fehler: %s" % error
+                message = tr("Interner Fehler: %s") % error
                 self._deliver.emit(lambda: self._finish(lambda: self._fail(message, fallback)))
                 return
             self._deliver.emit(lambda: self._finish(lambda: then(result)))

@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 from calendary.errors import ServiceError
+from calendary.language import tr
 
 TIMEOUT = 20
 
@@ -22,13 +23,13 @@ class Keyring:
         try:
             return subprocess.run(["secret-tool", *args], input=secret, capture_output=True, timeout=TIMEOUT)
         except (OSError, subprocess.SubprocessError) as error:
-            raise ServiceError("Schlüsselbund nicht erreichbar (secret-tool): %s" % error) from error
+            raise ServiceError(tr("Schlüsselbund nicht erreichbar (secret-tool): %s") % error) from error
 
     def store(self, email, token):
         done = self._run(["store", "--label", "Calendary (%s): %s" % (self.service, email), "service", self.service, "account", email],
                          token.encode())
         if done.returncode != 0:
-            raise ServiceError("Anmeldung konnte nicht im Schlüsselbund gespeichert werden")
+            raise ServiceError(tr("Anmeldung konnte nicht im Schlüsselbund gespeichert werden"))
 
     def lookup(self, email):
         """The refresh token, or None when the keyring has none for this account."""

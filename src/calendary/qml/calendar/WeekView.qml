@@ -198,7 +198,7 @@ Item {
                 Text {
                     x: Theme.space2
                     y: Theme.space1 + 2
-                    text: root.ghost ? "Neuer Termin\n" + Dates.time(Dates.atMinutes(0, root.ghost.from)) + " – " + Dates.time(Dates.atMinutes(0, root.ghost.to)) : ""
+                    text: root.ghost ? qsTr("Neuer Termin") + "\n" + Dates.time(Dates.atMinutes(0, root.ghost.from)) + " – " + Dates.time(Dates.atMinutes(0, root.ghost.to)) : ""
                     color: Theme.fg
                     font.family: Theme.fontUi
                     font.pixelSize: Theme.fsSmall

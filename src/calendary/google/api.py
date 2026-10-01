@@ -10,6 +10,7 @@ import requests
 
 from calendary.google.auth import post_token
 from calendary.google.errors import GoogleError
+from calendary.language import tr
 
 API = "https://www.googleapis.com/calendar/v3"
 TIMEOUT = 20
@@ -47,7 +48,7 @@ class Account:
             reply = requests.request(method, API + url, params=params, json=body, timeout=TIMEOUT,
                                      headers={"Authorization": "Bearer " + self.access_token()})
         except requests.RequestException as error:
-            raise GoogleError("Keine Verbindung zu Google") from error
+            raise GoogleError(tr("Keine Verbindung zu Google")) from error
         if reply.status_code >= 400:
             try:
                 message = reply.json()["error"]["message"]

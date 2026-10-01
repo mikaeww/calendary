@@ -1,4 +1,4 @@
-"""The real window, offscreen, against the fake Google: drag, resize, draw, the editor, paging and the view switch.
+"""The real window, offscreen, against the fake Google: drag, resize, draw, the editor, paging, view and language switch.
 
 Mouse events go to the offscreen window only, never to a desktop session.
 """
@@ -15,7 +15,7 @@ from PySide6.QtCore import Q_ARG, QEvent, QMetaObject, QPointF, Qt
 from PySide6.QtGui import QGuiApplication, QMouseEvent
 from PySide6.QtQuick import QQuickWindow
 
-from calendary import cache
+from calendary import cache, language
 from calendary.app import build_engine
 from calendary.bridge import Calendar
 from calendary.preferences import Preferences
@@ -41,6 +41,8 @@ class InterfaceTest(unittest.TestCase):
         cache.add_account(cls.db, "me")
         preferences = Preferences(str(root / "p.ini"), shell=root)
         preferences.set("view", "week")
+        # The system language would decide otherwise, and other tests expect German messages.
+        preferences.set("language", "de")
         with mock.patch("calendary.bridge.signin.Account", lambda client, email, token: cls.fake):
             cls.calendar = Calendar(preferences, cls.db, FakeKeyring({"me": "t"}),
                                     {"island": str(root / "up.json"), "client": str(root / "client.json")})
@@ -141,6 +143,18 @@ class InterfaceTest(unittest.TestCase):
         month = self.items("MonthView")[0]
         week = self.items("WeekView")[0]
         self.assertEqual((round(month.property("opacity"), 3), week.property("visible")), (1.0, False))
+
+    def test_3_language_switch_reaches_the_window(self):
+        self.assertIn("Heute", [b.property("label") for b in self.items("Button")])
+        try:
+            self.engine.setUiLanguage("en")
+            self.spin(0.2)
+            self.assertIn("Today", [b.property("label") for b in self.items("Button")])
+            self.assertEqual(language.tr("Keine Verbindung zu Google"), "No connection to Google")
+        finally:
+            self.engine.setUiLanguage("de")
+            self.spin(0.2)
+        self.assertIn("Heute", [b.property("label") for b in self.items("Button")])
 
 
 if __name__ == "__main__":

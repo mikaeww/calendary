@@ -3,12 +3,14 @@
 # Calendary
 
 A desktop calendar for Google Calendar and Apple's iCloud calendars, on Linux (made for Hyprland) and Windows.
-Python with Qt Quick (PySide6). The interface is German.
+Python with Qt Quick (PySide6). The interface is English or German: it follows the system language and can be
+switched in the settings.
 
 - Several Google accounts and Apple IDs side by side; every calendar can be hidden
 - Week and month view; draw an event into the week, drag it to another time or day, drag its edge to resize
 - Create, edit and delete events, with repeat for new ones; edits show at once and roll back if the server refuses
 - Grey interface in dark and light, following the system
+- English and German; Settings → Language switches at once
 - When someone adds an event to a calendar shared with you, a small banner says what, when and from whom; your own
   events never show up there
 - The next events go to `~/.cache/calendary/upcoming.json` for a desktop shell to show
@@ -76,14 +78,14 @@ it to their own free Google Cloud project. This takes about ten minutes and is d
 **In Calendary**
 
 7. Open the settings: the gear at the bottom left or Ctrl+,.
-8. Press **Client-Datei wählen …** and pick the downloaded JSON file. Calendary checks it and keeps a copy in
+8. Press **Choose client file …** and pick the downloaded JSON file. Calendary checks it and keeps a copy in
    `~/.config/calendary/google-client.json` (`%USERPROFILE%\.config\calendary\` on Windows); the download can be
    deleted afterwards.
-9. Press **Mit Google anmelden**. Your browser opens; pick your account. Google warns "Google hasn't verified this
+9. Press **Sign in with Google**. Your browser opens; pick your account. Google warns "Google hasn't verified this
    app", because the project is yours and not reviewed by Google: press **Advanced**, then **Go to Calendary**, and
    allow access to your calendars. Return to Calendary; the calendars appear in the sidebar.
 
-More Google accounts: press **Mit Google anmelden** again. The same client works for all of them. Details: ADR
+More Google accounts: press **Sign in with Google** again. The same client works for all of them. Details: ADR
 [0001](docs/decisions/0001-google-sign-in.md) and [0007](docs/decisions/0007-own-oauth-client.md).
 
 ## Connect Apple Calendar (iCloud)
@@ -93,12 +95,12 @@ turned on, which is the default for current Apple IDs.
 
 1. Sign in at [account.apple.com](https://account.apple.com/account/manage), open **Sign-In and Security → App-Specific
    Passwords** and create one named `Calendary`. Apple shows it once, in the form `xxxx-xxxx-xxxx-xxxx`.
-2. In Calendary open the settings and press **iCloud verbinden**.
+2. In Calendary open the settings and press **Connect iCloud**.
 3. Enter your Apple ID (its e-mail address) and the app-specific password, not your normal password, and press
-   **Verbinden**. Calendary tries the sign-in first and stores the password only if it worked.
+   **Connect**. Calendary tries the sign-in first and stores the password only if it worked.
 
 Your iCloud calendars appear in the sidebar, including calendars others share with you; read-only ones carry a
-lock. To revoke access later, delete the app-specific password on account.apple.com or press **Abmelden** in the
+lock. To revoke access later, delete the app-specific password on account.apple.com or press **Sign out** in the
 settings. iCloud series can be viewed but not yet edited in Calendary.
 
 ## Shared calendars

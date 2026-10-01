@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Renders the window offscreen with sample events: no real accounts, keyring, network or visible window.
 
-  python3 tools/render.py OUT.png [week|month] [dark|light] [WIDTHxHEIGHT] [editor|settings|icloud|setup|arrival]
+  python3 tools/render.py OUT.png [week|month] [dark|light] [de|en] [WIDTHxHEIGHT] [editor|settings|icloud|setup|arrival]
 
 Everything the app would write goes to a fresh temporary directory. Evidence for layout only, not for motion.
 """
@@ -27,6 +27,7 @@ from PySide6.QtQuick import QQuickWindow  # noqa: E402
 from calendary import cache  # noqa: E402
 from calendary.app import build_engine  # noqa: E402
 from calendary.bridge import Calendar  # noqa: E402
+from calendary.language import tr  # noqa: E402
 from calendary.preferences import Preferences  # noqa: E402
 
 EMAIL = "name@gmail.com"
@@ -66,7 +67,7 @@ def arrivals():
     """What the banners show when someone adds to a shared calendar: one event and one summary."""
     start = datetime.now().replace(hour=19, minute=30, second=0, microsecond=0) + timedelta(days=2)
     shared = {"calendar": "Geteilt von Alex", "color": "#ff9ec7", "allDay": False}
-    return [dict(shared, title="4 neue Termine", start=cache.ms(start + timedelta(days=5)),
+    return [dict(shared, title=tr("%d neue Termine") % 4, start=cache.ms(start + timedelta(days=5)),
                  end=cache.ms(start + timedelta(days=5, hours=1)), who="Alex", count=4),
             dict(shared, title="Konzert im Park", start=cache.ms(start), end=cache.ms(start + timedelta(hours=2)),
                  who="Alex A.", count=1)]
@@ -78,6 +79,7 @@ def arguments():
     return {"out": args[0] if args else "calendary.png",
             "view": "month" if "month" in args else "week",
             "theme": "light" if "light" in args else "dark",
+            "language": "en" if "en" in args else "de",
             "size": [int(v) for v in size.split("x")],
             "sheet": next((a for a in args if a in ("editor", "settings", "icloud", "setup", "arrival")), "")}
 
@@ -88,7 +90,8 @@ def main():
     db = cache.connect(str(TMP / "calendary.db"))
     sample(db)
     preferences = Preferences(str(TMP / "calendary.ini"))
-    for key, value in (("view", options["view"]), ("theme", options["theme"]), ("width", options["size"][0]),
+    for key, value in (("view", options["view"]), ("theme", options["theme"]), ("language", options["language"]),
+                       ("width", options["size"][0]),
                        ("height", options["size"][1])):
         preferences.set(key, value)
     client = TMP / "google-client.json"

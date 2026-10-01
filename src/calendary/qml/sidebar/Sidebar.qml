@@ -80,7 +80,7 @@ Item {
 
         IconButton {
             glyph: Theme.glyph.settings
-            label: "Einstellungen"
+            label: qsTr("Einstellungen")
             onClicked: root.app.settingsOpen = true
         }
 
@@ -88,7 +88,7 @@ Item {
             id: syncButton
 
             glyph: Theme.glyph.sync
-            label: "Jetzt synchronisieren"
+            label: qsTr("Jetzt synchronisieren")
             enabled: Calendar.accounts.length > 0
             onClicked: Calendar.refresh()
         }
@@ -97,7 +97,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width - 2 * Theme.ctlH - 2 * Theme.space1
             leftPadding: Theme.space1
-            text: Calendar.signingIn ? "Warte auf den Browser …" : Calendar.busy ? "Synchronisiere …" : ""
+            text: Calendar.signingIn ? qsTr("Warte auf den Browser …") : Calendar.busy ? qsTr("Synchronisiere …") : ""
             color: Theme.sub
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsSmall

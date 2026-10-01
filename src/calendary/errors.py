@@ -1,4 +1,4 @@
-"""The error every provider raises; its message is German and shown to the user as is."""
+"""The error every provider raises; its message is already in the interface language and shown as is."""
 
 
 class ServiceError(Exception):

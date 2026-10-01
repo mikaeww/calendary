@@ -41,7 +41,7 @@ Sheet {
     }
 
     Text {
-        text: "Einstellungen"
+        text: qsTr("Einstellungen")
         color: Theme.fg
         font.family: Theme.fontUi
         font.pixelSize: Theme.fsHead
@@ -51,7 +51,7 @@ Sheet {
 
     SectionLabel {
         topPadding: Theme.space2
-        text: "Konten"
+        text: qsTr("Konten")
     }
 
     Repeater {
@@ -95,7 +95,7 @@ Sheet {
 
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                label: account.confirming ? "Wirklich abmelden?" : "Abmelden"
+                label: account.confirming ? qsTr("Wirklich abmelden?") : qsTr("Abmelden")
                 strong: account.confirming
                 onClicked: {
                     if (!account.confirming) {
@@ -115,20 +115,20 @@ Sheet {
         Button {
             visible: !Calendar.signingIn
             enabled: Calendar.ready
-            label: "Mit Google anmelden"
+            label: qsTr("Mit Google anmelden")
             primary: true
             onClicked: Calendar.signIn()
         }
 
         Button {
             visible: Calendar.signingIn
-            label: "Anmeldung abbrechen"
+            label: qsTr("Anmeldung abbrechen")
             onClicked: Calendar.cancelSignIn()
         }
 
         Button {
             visible: !root.addingICloud
-            label: "iCloud verbinden"
+            label: qsTr("iCloud verbinden")
             onClicked: {
                 root.addingICloud = true;
                 appleId.input.forceActiveFocus();
@@ -138,7 +138,7 @@ Sheet {
         Text {
             visible: Calendar.signingIn
             anchors.verticalCenter: parent.verticalCenter
-            text: "Im Browser anmelden …"
+            text: qsTr("Im Browser anmelden …")
             color: Theme.sub
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsBody
@@ -153,7 +153,7 @@ Sheet {
         Text {
             width: parent.width
             wrapMode: Text.Wrap
-            text: "Für Google braucht jede Installation einen eigenen OAuth-Client: in der Google Cloud Console ein Projekt anlegen, die Calendar API aktivieren, einen Client vom Typ Desktop-App erstellen und dessen JSON-Datei hier wählen."
+            text: qsTr("Für Google braucht jede Installation einen eigenen OAuth-Client: in der Google Cloud Console ein Projekt anlegen, die Calendar API aktivieren, einen Client vom Typ Desktop-App erstellen und dessen JSON-Datei hier wählen.")
             color: Theme.sub
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsSmall
@@ -163,12 +163,12 @@ Sheet {
             spacing: Theme.space2
 
             Button {
-                label: "Client-Datei wählen …"
+                label: qsTr("Client-Datei wählen …")
                 onClicked: clientPicker.open()
             }
 
             Button {
-                label: "Anleitung"
+                label: qsTr("Anleitung")
                 onClicked: Qt.openUrlExternally("https://github.com/mikaeww/calendary#google-setup")
             }
         }
@@ -177,8 +177,8 @@ Sheet {
     FileDialog {
         id: clientPicker
 
-        title: "Google-Client-Datei wählen"
-        nameFilters: ["Google-Client (*.json)"]
+        title: qsTr("Google-Client-Datei wählen")
+        nameFilters: [qsTr("Google-Client (*.json)")]
         onAccepted: Calendar.importClient(selectedFile.toString())
     }
 
@@ -190,7 +190,7 @@ Sheet {
         Text {
             width: parent.width
             wrapMode: Text.Wrap
-            text: "iCloud braucht deine Apple-ID und ein app-spezifisches Passwort, nicht dein normales Passwort. Du erstellst es auf account.apple.com unter „Anmeldung und Sicherheit“."
+            text: qsTr("iCloud braucht deine Apple-ID und ein app-spezifisches Passwort, nicht dein normales Passwort. Du erstellst es auf account.apple.com unter „Anmeldung und Sicherheit“.")
             color: Theme.sub
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsSmall
@@ -200,14 +200,14 @@ Sheet {
             id: appleId
 
             width: parent.width
-            placeholder: "Apple-ID (E-Mail)"
+            placeholder: qsTr("Apple-ID (E-Mail)")
         }
 
         Field {
             id: appPassword
 
             width: parent.width
-            placeholder: "App-spezifisches Passwort (xxxx-xxxx-xxxx-xxxx)"
+            placeholder: qsTr("App-spezifisches Passwort (xxxx-xxxx-xxxx-xxxx)")
             input.echoMode: TextInput.Password
         }
 
@@ -216,18 +216,18 @@ Sheet {
 
             Button {
                 enabled: !Calendar.connecting
-                label: Calendar.connecting ? "Prüfe bei iCloud …" : "Verbinden"
+                label: Calendar.connecting ? qsTr("Prüfe bei iCloud …") : qsTr("Verbinden")
                 strong: true
                 onClicked: root.submitted = Calendar.connectICloud(appleId.text, appPassword.text)
             }
 
             Button {
-                label: "Passwort erstellen"
+                label: qsTr("Passwort erstellen")
                 onClicked: Qt.openUrlExternally("https://account.apple.com/account/manage")
             }
 
             Button {
-                label: "Abbrechen"
+                label: qsTr("Abbrechen")
                 onClicked: root.closeICloud()
             }
         }
@@ -235,7 +235,7 @@ Sheet {
 
     SectionLabel {
         topPadding: Theme.space3
-        text: "Darstellung"
+        text: qsTr("Darstellung")
     }
 
     Grid {
@@ -245,42 +245,59 @@ Sheet {
         verticalItemAlignment: Grid.AlignVCenter
 
         Text {
-            text: "Erscheinungsbild"
+            text: qsTr("Erscheinungsbild")
             color: Theme.sub
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsBody
         }
 
         Segmented {
-            options: [["system", "System"], ["dark", "Dunkel"], ["light", "Hell"]]
+            options: [["system", qsTr("System")], ["dark", qsTr("Dunkel")], ["light", qsTr("Hell")]]
             current: Theme.mode
             onPicked: value => Theme.setMode(value)
         }
 
         Text {
-            text: "Woche beginnt"
+            text: qsTr("Woche beginnt")
             color: Theme.sub
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsBody
         }
 
         Segmented {
-            options: [["1", "Montag"], ["0", "Sonntag"]]
+            options: [["1", qsTr("Montag")], ["0", qsTr("Sonntag")]]
             current: String(root.app.weekStart)
             onPicked: value => root.app.setPreference("weekStart", Number(value))
         }
 
         Text {
-            text: "Woche zeigt"
+            text: qsTr("Woche zeigt")
             color: Theme.sub
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsBody
         }
 
         Segmented {
-            options: [["7", "7 Tage"], ["5", "Mo – Fr"]]
+            options: [["7", qsTr("7 Tage")], ["5", qsTr("Mo – Fr")]]
             current: root.app.workWeek ? "5" : "7"
             onPicked: value => root.app.setPreference("workWeek", value === "5")
+        }
+
+        Text {
+            text: qsTr("Sprache")
+            color: Theme.sub
+            font.family: Theme.fontUi
+            font.pixelSize: Theme.fsBody
+        }
+
+        // Each language carries its own name, so it stays findable whichever one is shown.
+        Segmented {
+            options: [["system", qsTr("System")], ["de", "Deutsch"], ["en", "English"]]
+            current: Qt.uiLanguage
+            onPicked: value => {
+                Preferences.set("language", value);
+                Qt.uiLanguage = value;
+            }
         }
     }
 
@@ -290,7 +307,7 @@ Sheet {
 
         Button {
             anchors.right: parent.right
-            label: "Fertig"
+            label: qsTr("Fertig")
             onClicked: root.app.settingsOpen = false
         }
     }

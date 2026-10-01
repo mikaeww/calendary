@@ -20,7 +20,7 @@ Column {
 
         Text {
             width: parent.width
-            text: Calendar.signingIn ? "Im Browser anmelden …" : "Noch kein Google-Konto verbunden."
+            text: Calendar.signingIn ? qsTr("Im Browser anmelden …") : qsTr("Noch kein Google-Konto verbunden.")
             color: Theme.sub
             font.family: Theme.fontUi
             font.pixelSize: Theme.fsBody
@@ -29,19 +29,19 @@ Column {
 
         Button {
             visible: !Calendar.signingIn
-            label: "Mit Google anmelden"
+            label: qsTr("Mit Google anmelden")
             primary: true
             onClicked: Calendar.signIn()
         }
 
         Button {
             visible: Calendar.signingIn
-            label: "Abbrechen"
+            label: qsTr("Abbrechen")
             onClicked: Calendar.cancelSignIn()
         }
 
         Button {
-            label: "iCloud verbinden"
+            label: qsTr("iCloud verbinden")
             onClicked: root.app.settingsOpen = true
         }
     }
@@ -120,7 +120,7 @@ Column {
                         color: Theme.faint
                         font.family: Theme.iconFont
                         font.pixelSize: Theme.fsBody
-                        Accessible.name: "nur lesbar"
+                        Accessible.name: qsTr("nur lesbar")
                     }
 
                     HoverHandler {
