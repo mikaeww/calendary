@@ -31,7 +31,8 @@ def build_engine(preferences=None, calendar=None):
     # Qt.uiLanguage holds the saved choice ("system", "de" or "en"); the settings sheet changes it.
     engine.uiLanguageChanged.connect(lambda: (language.use(engine.uiLanguage()), engine.retranslate()))
     # Applied directly as well: Qt starts uiLanguage at the system's language, which may equal the choice and not emit.
-    language.use(preferences.get("language", "system"))
-    engine.setUiLanguage(preferences.get("language", "system"))
+    choice = preferences.get("language", "en")
+    language.use(choice)
+    engine.setUiLanguage(choice)
     engine.load(str(QML / "Main.qml"))
     return engine

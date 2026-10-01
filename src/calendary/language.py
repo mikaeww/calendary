@@ -1,4 +1,4 @@
-"""The interface language: German as written in the code, English from english.json, the system's choice by default.
+"""The interface language: German as written in the code, English from english.json; English unless chosen otherwise.
 
 QML marks its text with qsTr(), Python with tr(); both read the same table. Text without an entry stays German, so
 tests/test_language.py keeps the table complete. Not for dates and times, which stay day.month.year and 24 hours.

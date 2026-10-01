@@ -25,24 +25,24 @@ Icon "${STAGE}\assets\icons\calendary.ico"
 UninstallIcon "${STAGE}\assets\icons\calendary.ico"
 
 VIProductVersion "${VERSION}.0"
-VIAddVersionKey /LANG=1031 "ProductName" "Calendary"
-VIAddVersionKey /LANG=1031 "ProductVersion" "${VERSION}"
-VIAddVersionKey /LANG=1031 "FileVersion" "${VERSION}"
-VIAddVersionKey /LANG=1031 "FileDescription" "Calendary Installer"
-VIAddVersionKey /LANG=1031 "LegalCopyright" "MIT"
+VIAddVersionKey /LANG=1033 "ProductName" "Calendary"
+VIAddVersionKey /LANG=1033 "ProductVersion" "${VERSION}"
+VIAddVersionKey /LANG=1033 "FileVersion" "${VERSION}"
+VIAddVersionKey /LANG=1033 "FileDescription" "Calendary Installer"
+VIAddVersionKey /LANG=1033 "LegalCopyright" "MIT"
 
 !define MUI_ICON "${STAGE}\assets\icons\calendary.ico"
 !define MUI_UNICON "${STAGE}\assets\icons\calendary.ico"
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_RUN "$INSTDIR\python\pythonw.exe"
 !define MUI_FINISHPAGE_RUN_PARAMETERS "-m calendary"
-!define MUI_FINISHPAGE_RUN_TEXT "Calendary starten"
+!define MUI_FINISHPAGE_RUN_TEXT "Start Calendary"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
-!insertmacro MUI_LANGUAGE "German"
+!insertmacro MUI_LANGUAGE "English"
 
 !macro RemoveProgram
   RMDir /r "$INSTDIR\python"

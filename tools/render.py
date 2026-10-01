@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Renders the window offscreen with sample events: no real accounts, keyring, network or visible window.
 
-  python3 tools/render.py OUT.png [week|month] [dark|light] [de|en] [WIDTHxHEIGHT] [editor|settings|icloud|setup|arrival]
+  python3 tools/render.py OUT.png [week|month] [dark|light] [en|de] [WIDTHxHEIGHT] [editor|settings|icloud|setup|arrival]
 
 Everything the app would write goes to a fresh temporary directory. Evidence for layout only, not for motion.
 """
@@ -42,22 +42,22 @@ def sample(db):
     """A believable week around today: overlaps, a night event, all-day and multi-day bars, a read-only calendar."""
     cache.add_account(db, EMAIL)
     cache.store_calendars(db, EMAIL, [
-        {"id": "privat", "name": "Privat", "color": "#7ec8ff", "writable": 1, "main": 1},
-        {"id": "arbeit", "name": "Arbeit", "color": "#b5c59d", "writable": 1, "main": 0},
-        {"id": "feiertage", "name": "Feiertage", "color": "#ff9ec7", "writable": 0, "main": 0}])
+        {"id": "privat", "name": "Personal", "color": "#7ec8ff", "writable": 1, "main": 1},
+        {"id": "arbeit", "name": "Work", "color": "#b5c59d", "writable": 1, "main": 0},
+        {"id": "feiertage", "name": "Holidays", "color": "#ff9ec7", "writable": 0, "main": 0}])
     today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     monday = today - timedelta(days=today.weekday())
-    timed = [("arbeit", 1, (8, 50), (9, 50), "Gespräch Kunde", "Büro"), ("privat", 0, (10, 0), (11, 30), "Zahnarzt", ""),
-             ("privat", 0, (11, 0), (12, 0), "Mittagessen", ""), ("arbeit", 2, (14, 0), (15, 0), "Team-Meeting", ""),
-             ("privat", 3, (18, 30), (21, 0), "Kino", ""), ("privat", 4, (7, 0), (8, 0), "Gym", ""),
-             ("privat", 2, (16, 0), (16, 30), "Paket abholen", ""), ("privat", 5, (20, 0), (23, 30), "Geburtstagsfeier", "Bar")]
+    timed = [("arbeit", 1, (8, 50), (9, 50), "Client call", "Office"), ("privat", 0, (10, 0), (11, 30), "Dentist", ""),
+             ("privat", 0, (11, 0), (12, 0), "Lunch", ""), ("arbeit", 2, (14, 0), (15, 0), "Team meeting", ""),
+             ("privat", 3, (18, 30), (21, 0), "Cinema", ""), ("privat", 4, (7, 0), (8, 0), "Gym", ""),
+             ("privat", 2, (16, 0), (16, 30), "Pick up parcel", ""), ("privat", 5, (20, 0), (23, 30), "Birthday party", "Bar")]
     for n, (calendar, day, start, end, title, place) in enumerate(timed):
         base = monday + timedelta(days=day)
         event(db, calendar, {"id": "t%d" % n, "summary": title, "location": place,
                              "start": {"dateTime": base.replace(hour=start[0], minute=start[1]).astimezone().isoformat()},
                              "end": {"dateTime": base.replace(hour=end[0], minute=end[1]).astimezone().isoformat()}})
-    for n, (calendar, day, length, title) in enumerate([("feiertage", 4, 1, "Tag der Deutschen Einheit"),
-                                                        ("privat", 5, 3, "Kurztrip")]):
+    for n, (calendar, day, length, title) in enumerate([("feiertage", 4, 1, "Public holiday"),
+                                                        ("privat", 5, 3, "Weekend trip")]):
         first = (monday + timedelta(days=day)).date()
         event(db, calendar, {"id": "a%d" % n, "summary": title, "start": {"date": first.isoformat()},
                              "end": {"date": (first + timedelta(days=length)).isoformat()}})
@@ -66,10 +66,10 @@ def sample(db):
 def arrivals():
     """What the banners show when someone adds to a shared calendar: one event and one summary."""
     start = datetime.now().replace(hour=19, minute=30, second=0, microsecond=0) + timedelta(days=2)
-    shared = {"calendar": "Geteilt von Alex", "color": "#ff9ec7", "allDay": False}
+    shared = {"calendar": "Shared by Alex", "color": "#ff9ec7", "allDay": False}
     return [dict(shared, title=tr("%d neue Termine") % 4, start=cache.ms(start + timedelta(days=5)),
                  end=cache.ms(start + timedelta(days=5, hours=1)), who="Alex", count=4),
-            dict(shared, title="Konzert im Park", start=cache.ms(start), end=cache.ms(start + timedelta(hours=2)),
+            dict(shared, title="Concert in the park", start=cache.ms(start), end=cache.ms(start + timedelta(hours=2)),
                  who="Alex A.", count=1)]
 
 
@@ -79,7 +79,7 @@ def arguments():
     return {"out": args[0] if args else "calendary.png",
             "view": "month" if "month" in args else "week",
             "theme": "light" if "light" in args else "dark",
-            "language": "en" if "en" in args else "de",
+            "language": "de" if "de" in args else "en",
             "size": [int(v) for v in size.split("x")],
             "sheet": next((a for a in args if a in ("editor", "settings", "icloud", "setup", "arrival")), "")}
 
@@ -108,7 +108,7 @@ def main():
         sheet.setProperty("addingICloud", options["sheet"] == "icloud")
     elif options["sheet"] == "editor":
         week = calendar.week(float(cache.midnight(datetime.now().date()) - 7 * 86400000), 14)
-        ev = next(e for day in week["days"] for e in day if e["title"] == "Gespräch Kunde")
+        ev = next(e for day in week["days"] for e in day if e["title"] == "Client call")
         editor = next(o for o in window.contentItem().childItems() if o.metaObject().className().startswith("EventEditor"))
         editor.setProperty("ev", ev)
     calendar.accountsChanged.emit()

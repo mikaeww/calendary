@@ -3,14 +3,18 @@
 # Calendary
 
 A desktop calendar for Google Calendar and Apple's iCloud calendars, on Linux (made for Hyprland) and Windows.
-Python with Qt Quick (PySide6). The interface is English or German: it follows the system language and can be
-switched in the settings.
+Python with Qt Quick (PySide6). The interface is in English; German can be chosen in the settings.
+
+<p align="center">
+  <img src="assets/screenshots/week-dark.png" width="49%" alt="Week view in the dark theme">
+  <img src="assets/screenshots/month-light.png" width="49%" alt="Month view in the light theme">
+</p>
 
 - Several Google accounts and Apple IDs side by side; every calendar can be hidden
 - Week and month view; draw an event into the week, drag it to another time or day, drag its edge to resize
 - Create, edit and delete events, with repeat for new ones; edits show at once and roll back if the server refuses
 - Grey interface in dark and light, following the system
-- English and German; Settings → Language switches at once
+- English by default, German too; Settings → Language switches at once (System follows the computer's language)
 - When someone adds an event to a calendar shared with you, a small banner says what, when and from whom; your own
   events never show up there
 - The next events go to `~/.cache/calendary/upcoming.json` for a desktop shell to show
@@ -130,6 +134,8 @@ that day. Events added while Calendary was closed do not get a banner.
 python3 tools/check.py                            # structure, qmlformat, qmllint, all tests
 python3 tools/render.py out.png week dark         # offscreen screenshot with sample events
 ```
+
+The screenshots above are `tools/render.py` output with its made-up sample events (`week dark`, `month light`).
 
 Conventions, decisions and verification plans are in [docs/](docs/README.md).
 

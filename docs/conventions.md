@@ -54,8 +54,8 @@ Forbidden module names: `utils`, `util`, `helpers`, `helper`, `misc`, `common`, 
   properties.
 - UI text is written in German, code and docs are English. Every visible text is marked: `qsTr("…")` in QML and
   JavaScript, `tr("…")` in Python, one literal per call with `%1` or `%s` for values. Its English goes into
-  `src/calendary/english.json`; `tests/test_language.py` fails on a missing or stale entry. The language follows the
-  system (German on a German system, English otherwise) until it is chosen in the settings. Dates stay
+  `src/calendary/english.json`; `tests/test_language.py` fails on a missing or stale entry. English is the default;
+  the settings offer English, German and System (German on a German system, English otherwise). Dates stay
   day.month.year with 24 hours in both languages.
 
 ## Workflow
