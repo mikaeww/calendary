@@ -2,65 +2,113 @@
 
 # Calendary
 
-A calendar for Google accounts and iCloud calendars on Linux, made for Hyprland, and on Windows. Python with Qt Quick (PySide6).
+A desktop calendar for Google Calendar and Apple's iCloud calendars, on Linux (made for Hyprland) and Windows.
+Python with Qt Quick (PySide6). The interface is German.
 
-- Sign in with Google in the browser, one button; iCloud with the Apple ID and an app-specific password
-  (account.apple.com → Sign-In and Security); several accounts, every calendar can be hidden
+- Several Google accounts and Apple IDs side by side; every calendar can be hidden
 - Week and month view; draw an event into the week, drag it to another time or day, drag its edge to resize
-- Create, edit and delete events, with repeat for new ones; edits show at once and roll back if Google refuses
-- Grey interface in dark and light, following the system; the UI font comes from the Ghostly QShell
+- Create, edit and delete events, with repeat for new ones; edits show at once and roll back if the server refuses
+- Grey interface in dark and light, following the system
 - When someone adds an event to a calendar shared with you, a small banner says what, when and from whom; your own
   events never show up there
-- The next events go to `~/.cache/calendary/upcoming.json` for the shell's island
+- The next events go to `~/.cache/calendary/upcoming.json` for a desktop shell to show
 
-The interface is German. Status: Google works against the real service; iCloud is verified against a fake CalDAV
-server and still to be tried against real iCloud, see [docs/roadmap.md](docs/roadmap.md).
+Status: Google is tested against the real service. iCloud is tested against a fake CalDAV server and still has to
+be tried against real iCloud; see [docs/roadmap.md](docs/roadmap.md).
 
-## Google setup
+Contents: [Install on Windows](#install-on-windows) · [Install on Linux](#install-on-linux) ·
+[Connect Google Calendar](#google-setup) · [Connect Apple Calendar (iCloud)](#connect-apple-calendar-icloud) ·
+[Shared calendars](#shared-calendars)
 
-Google gives calendar access only to registered apps, and Calendary ships no client of its own: every installation
-uses its own Google Cloud project. This takes about five minutes, once.
+## Install on Windows
 
-1. In the [Google Cloud Console](https://console.cloud.google.com/) create a project and enable the
-   **Google Calendar API**.
-2. Under **Google Auth Platform → Branding**, fill in the app name and your e-mail address. Under **Audience**,
-   choose **External** and set the publishing status to **In production**; in "Testing", Google ends every sign-in
-   after seven days.
-3. Under **Data Access**, add the scopes `openid`, `.../auth/userinfo.email` and `.../auth/calendar`.
-4. Under **Clients**, create an OAuth client of type **Desktop app** and download its JSON file.
-5. In Calendary open the settings (Ctrl+,), press "Client-Datei wählen …" and pick that file. It is copied to
-   `~/.config/calendary/google-client.json` (`%USERPROFILE%\.config\calendary\` on Windows).
+1. Open the [latest release](https://github.com/mikaeww/calendary/releases/latest) and download
+   `Calendary-X.Y.Z-x64-setup.exe`.
+2. Run it. The installer is not signed, so Windows may show "Windows protected your PC": click **More info**, then
+   **Run anyway**. It installs for your user only into `%LOCALAPPDATA%\Programs\Calendary`; no administrator rights.
+3. Start Calendary from the Start menu.
 
-Then "Mit Google anmelden" opens the browser. Google shows an "unverified app" notice because the project is yours
-and not verified; continue via "Advanced". Refresh tokens are stored in the Secret Service (gnome-keyring) through
-`secret-tool` or in the Windows Credential Manager, never in a file. Details: ADR
-[0001](docs/decisions/0001-google-sign-in.md) and [0007](docs/decisions/0007-own-oauth-client.md).
+Python and everything else come with the installer. Passwords and sign-in tokens go to the Windows Credential
+Manager. To remove it: Settings → Apps → Calendary → Uninstall.
 
-iCloud needs no setup: the Apple ID and an app-specific password are enough.
+## Install on Linux
 
-## Install
-
-Needs Python 3 with PySide6, `requests` and `python-dateutil`, `secret-tool` (libsecret), a C compiler and the Wayland headers.
+You need Python 3 with PySide6, `requests` and `python-dateutil`, `secret-tool` (libsecret) with a running Secret
+Service such as gnome-keyring, a C compiler and the Wayland client headers. On Arch Linux:
 
 ```sh
+sudo pacman -S --needed git python pyside6 python-requests python-dateutil libsecret gnome-keyring gcc wayland
+```
+
+Other distributions have the same packages under similar names. Then:
+
+```sh
+git clone https://github.com/mikaeww/calendary.git
+cd calendary
 ./install.sh
 calendary
 ```
 
-## Windows
+`install.sh` links the `calendary` command, the menu entry and the icons into `~/.local`; the app runs from the
+cloned folder, so `git pull` updates it. Passwords and sign-in tokens go to the Secret Service, never into a file.
 
-The installer `Calendary-X.Y.Z-x64-setup.exe` from the releases page installs per user into
-`%LOCALAPPDATA%\Programs\Calendary` with a Start menu entry: embedded Python and PySide6, no OAuth client (see
-"Google setup"). Secrets go to the Windows Credential Manager.
+## Google setup
 
-The release workflow builds it, runs the tests on Windows, installs, smoke-tests and uninstalls, and only then
-publishes:
+Google lets only registered apps read calendars, and Calendary ships no registration of its own: everyone connects
+it to their own free Google Cloud project. This takes about ten minutes and is done once per computer.
 
-```sh
-gh workflow run "Windows release" -f version=0.2.0
-```
+**In the Google Cloud Console**
 
-Details: ADR [0006](docs/decisions/0006-windows-build.md).
+1. Open the [Google Cloud Console](https://console.cloud.google.com/) with your Google account. Open the project
+   menu at the top, choose **New project**, name it e.g. `Calendary` and press **Create**. Make sure the new
+   project is selected at the top.
+2. Go to **APIs & Services → Library**, search for **Google Calendar API**, open it and press **Enable**.
+3. Go to **Google Auth Platform** (search for it at the top) and press **Get started**. Enter `Calendary` as app
+   name and your address as support e-mail, choose **External** as audience, enter your address as contact, accept
+   the policy and press **Create**.
+4. Under **Audience**, press **Publish app** so the status becomes **In production**. In "Testing" Google signs you
+   out every seven days.
+5. Under **Data Access**, press **Add or remove scopes** and add `openid`, `.../auth/userinfo.email` and
+   `.../auth/calendar`, then **Save**.
+6. Under **Clients**, press **Create client**, choose **Desktop app** as application type, keep any name and press
+   **Create**. Download the JSON file in the dialog that follows (the name starts with `client_secret_`).
+
+**In Calendary**
+
+7. Open the settings: the gear at the bottom left or Ctrl+,.
+8. Press **Client-Datei wählen …** and pick the downloaded JSON file. Calendary checks it and keeps a copy in
+   `~/.config/calendary/google-client.json` (`%USERPROFILE%\.config\calendary\` on Windows); the download can be
+   deleted afterwards.
+9. Press **Mit Google anmelden**. Your browser opens; pick your account. Google warns "Google hasn't verified this
+   app", because the project is yours and not reviewed by Google: press **Advanced**, then **Go to Calendary**, and
+   allow access to your calendars. Return to Calendary; the calendars appear in the sidebar.
+
+More Google accounts: press **Mit Google anmelden** again. The same client works for all of them. Details: ADR
+[0001](docs/decisions/0001-google-sign-in.md) and [0007](docs/decisions/0007-own-oauth-client.md).
+
+## Connect Apple Calendar (iCloud)
+
+iCloud needs no Cloud project, only an app-specific password. Your Apple ID must have two-factor authentication
+turned on, which is the default for current Apple IDs.
+
+1. Sign in at [account.apple.com](https://account.apple.com/account/manage), open **Sign-In and Security → App-Specific
+   Passwords** and create one named `Calendary`. Apple shows it once, in the form `xxxx-xxxx-xxxx-xxxx`.
+2. In Calendary open the settings and press **iCloud verbinden**.
+3. Enter your Apple ID (its e-mail address) and the app-specific password, not your normal password, and press
+   **Verbinden**. Calendary tries the sign-in first and stores the password only if it worked.
+
+Your iCloud calendars appear in the sidebar, including calendars others share with you; read-only ones carry a
+lock. To revoke access later, delete the app-specific password on account.apple.com or press **Abmelden** in the
+settings. iCloud series can be viewed but not yet edited in Calendary.
+
+## Shared calendars
+
+A calendar someone shares with you shows up once you have accepted the invitation: for Google in Google Calendar
+on the web or the phone, for iCloud in the Calendar app on an Apple device or on icloud.com.
+
+While Calendary is open it syncs every minute. When someone else adds an event to such a calendar, a banner at the
+top right names the calendar, the event, its time and, where Google or iCloud tell, who added it. Clicking it shows
+that day. Events added while Calendary was closed do not get a banner.
 
 ## Shortcuts
 
